@@ -1,10 +1,9 @@
 // Database Client API Handler Wrapper
 const SpreadsheetEngine = {
-    // Ganti SPREADSHEET_ID dengan ID asli Google Sheet Anda nanti
-    // Untuk pengembangan default, OpenSheet API membaca schema sheet secara dinamis
+    // ID sudah diperbaiki, hanya mengambil deretan kode uniknya saja agar tidak eror bertumpuk
     Config: {
-        spreadsheetId: "https://docs.google.com/spreadsheets/d/1h1wj-Ifr6FhSQS7dco0r93ronEUCab8g/edit?usp=sharing&ouid=109995541701077089795&rtpof=true&sd=true", 
-        sheetName: "Sheet1"
+        spreadsheetId: "1kE4KnKZ_JqsvQ_zRoNLSZAOyL_LxaWH0nhFAl0s-9C0", 
+        sheetName: "Data_Tidy" 
     },
 
     // Set fallback dummy data as requested (20 baris) untuk mempermudah visualisasi offline/testing awal
