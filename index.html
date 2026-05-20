@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Sampah SMAN 18 Bandung</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -56,12 +56,6 @@
                     <a href="#" id="menu-statistik" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
                         <i class="fa-solid fa-chart-line w-5 group-hover:text-organik"></i> Statistik
                     </a>
-                    <a href="#" id="menu-export" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
-                        <i class="fa-solid fa-file-arrow-down w-5 group-hover:text-organik"></i> Export
-                    </a>
-                    <a href="#" id="menu-pengaturan" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
-                        <i class="fa-solid fa-gear w-5 group-hover:text-organik"></i> Pengaturan
-                    </a>
                 </nav>
             </div>
             
@@ -78,7 +72,7 @@
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 focus:outline-none relative">
+        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 focus:outline-none relative pb-20 md:pb-0">
             
             <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-3">
@@ -283,8 +277,74 @@
                     </section>
                 </div>
 
+                <div id="view-statistik" class="hidden animate-fadeIn space-y-6">
+                    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col justify-between h-[400px]">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-column text-organik"></i> Analisis Komparatif Akumulasi Sampah Per Tingkat
+                                </h4>
+                                <span class="text-xs text-gray-400">(Satuan: kg)</span>
+                            </div>
+                            <div class="relative flex-1 min-h-0">
+                                <canvas id="chartStatistikKomparatif"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[400px]">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-check text-blue-500"></i> Validitas & Status Logsheet Masuk
+                                </h4>
+                            </div>
+                            <div class="relative flex-1 min-h-0">
+                                <canvas id="chartStatistikStatus"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="p-5 border-b border-gray-100 dark:border-gray-700">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                                <i class="fa-solid fa-calculator text-purple-500"></i> Matriks Efisiensi Pengurangan Sampah Akademik
+                            </h4>
+                            <p class="text-xs text-gray-400 mt-0.5">Penilaian performa reduksi sampah rata-rata per tingkat berdasarkan data historis yang divalidasi</p>
+                        </div>
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="bg-gray-50/70 dark:bg-gray-700/40 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                        <th class="p-4">Klaster Tingkat</th>
+                                        <th class="p-4">Frekuensi Kontribusi (Entri)</th>
+                                        <th class="p-4 text-emerald-600">Rerata Organik (kg)</th>
+                                        <th class="p-4 text-orange-600">Rerata Non-Organik (kg)</th>
+                                        <th class="p-4 bg-gray-100/50 dark:bg-gray-700/20">Predikat Performa Lingkungan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body-matriks" class="text-sm divide-y divide-gray-100 dark:divide-gray-700/50">
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
             </div>
         </main>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-2 py-2.5 flex justify-around items-center md:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+        <button class="mobile-nav-btn nav-dashboard flex flex-col items-center gap-1 text-xs font-semibold transition-all">
+            <i class="fa-solid fa-chart-pie text-lg"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="mobile-nav-btn nav-data-sampah flex flex-col items-center gap-1 text-xs font-medium transition-all">
+            <i class="fa-solid fa-dumpster text-lg"></i>
+            <span>Data Sampah</span>
+        </button>
+        <button class="mobile-nav-btn nav-statistik flex flex-col items-center gap-1 text-xs font-medium transition-all">
+            <i class="fa-solid fa-chart-line text-lg"></i>
+            <span>Statistik</span>
+        </button>
     </div>
 
     <script src="js/spreadsheet.js"></script>

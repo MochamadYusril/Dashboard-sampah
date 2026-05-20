@@ -2,47 +2,82 @@
 document.addEventListener('DOMContentLoaded', async () => {
     let globalData = [];
     
-    // Elements Mapping
+    // =========================================================================
+    // 0. DOM ELEMENTS MAPPING
+    // =========================================================================
     const loader = document.getElementById('loading-overlay');
     const refreshBtn = document.getElementById('btn-refresh');
     const darkModeBtn = document.getElementById('dark-mode-toggle');
     const excelBtn = document.getElementById('btn-export-excel');
     const pdfBtn = document.getElementById('btn-export-pdf');
 
-    // Navigation Tabs Elements
+    // Navigation Tabs Elements (Desktop Sidebar)
     const menuDashboard = document.getElementById('menu-dashboard');
     const menuDataSampah = document.getElementById('menu-data-sampah');
+    const menuStatistik = document.getElementById('menu-statistik');
+    
+    // View Containers
     const viewDashboard = document.getElementById('view-dashboard');
     const viewDataSampah = document.getElementById('view-data-sampah');
+    const viewStatistik = document.getElementById('view-statistik');
 
     // =========================================================================
-    // 1. BULLETPROOF NAVIGATION ENGINE (Ditaruh di atas agar instan bisa diklik)
+    // 1. HYBRID NAVIGATION ENGINE (Mendukung Desktop Sidebar & Mobile Bottom Nav)
     // =========================================================================
-    if (menuDashboard && menuDataSampah && viewDashboard && viewDataSampah) {
-        menuDashboard.addEventListener('click', (e) => {
-            e.preventDefault();
-            // Efek Aktif Menu Dashboard
-            menuDashboard.className = "flex items-center gap-3 px-4 py-3 bg-organik-light dark:bg-emerald-950/40 text-organik font-semibold rounded-xl transition-all";
-            menuDataSampah.className = "flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group";
+    if (viewDashboard && viewDataSampah && viewStatistik) {
+        
+        // Gaya kelas CSS untuk Desktop Sidebar
+        const activeClass = "flex items-center gap-3 px-4 py-3 bg-organik-light dark:bg-emerald-950/40 text-organik font-semibold rounded-xl transition-all";
+        const inactiveClass = "flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group";
+
+        // Gaya kelas CSS untuk Mobile Bottom Navigation Bar
+        const mobileActive = "text-organik dark:text-emerald-400 font-bold scale-105";
+        const mobileInactive = "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300";
+
+        function switchTab(activeTab) {
+            // A. Tukar Status Tampilan Kontainer View (Hidden / Show)
+            viewDashboard.classList.toggle('hidden', activeTab !== 'dashboard');
+            viewDataSampah.classList.toggle('hidden', activeTab !== 'data-sampah');
+            viewStatistik.classList.toggle('hidden', activeTab !== 'statistik');
             
-            // Tukar Tampilan Kontainer
-            viewDashboard.classList.remove('hidden');
-            viewDataSampah.classList.add('hidden');
+            // B. Perbarui Tampilan Aktif Menu Desktop Sidebar (jika elemen eksis)
+            if (menuDashboard) menuDashboard.className = activeTab === 'dashboard' ? activeClass : inactiveClass;
+            if (menuDataSampah) menuDataSampah.className = activeTab === 'data-sampah' ? activeClass : inactiveClass;
+            if (menuStatistik) menuStatistik.className = activeTab === 'statistik' ? activeClass : inactiveClass;
+
+            // C. Perbarui Tampilan Aktif Menu Mobile Bottom Navigation
+            const mDash = document.querySelector('.mobile-nav-btn.nav-dashboard');
+            const mData = document.querySelector('.mobile-nav-btn.nav-data-sampah');
+            const mStat = document.querySelector('.mobile-nav-btn.nav-statistik');
+
+            if (mDash && mData && mStat) {
+                mDash.className = `mobile-nav-btn nav-dashboard flex flex-col items-center gap-1 text-xs transition-all ${activeTab === 'dashboard' ? mobileActive : mobileInactive}`;
+                mData.className = `mobile-nav-btn nav-data-sampah flex flex-col items-center gap-1 text-xs transition-all ${activeTab === 'data-sampah' ? mobileActive : mobileInactive}`;
+                mStat.className = `mobile-nav-btn nav-statistik flex flex-col items-center gap-1 text-xs transition-all ${activeTab === 'statistik' ? mobileActive : mobileInactive}`;
+            }
+        }
+
+        // --- Event Listener Menu Desktop ---
+        if (menuDashboard) menuDashboard.addEventListener('click', (e) => { e.preventDefault(); switchTab('dashboard'); });
+        if (menuDataSampah) menuDataSampah.addEventListener('click', (e) => { e.preventDefault(); switchTab('data-sampah'); });
+        if (menuStatistik) menuStatistik.addEventListener('click', (e) => { e.preventDefault(); switchTab('statistik'); });
+
+        // --- Event Listener Menu Mobile Bottom Nav (Delegasi Klik) ---
+        document.addEventListener('click', (e) => {
+            const targetBtn = e.target.closest('.mobile-nav-btn');
+            if (!targetBtn) return;
+            
+            e.preventDefault();
+            if (targetBtn.classList.contains('nav-dashboard')) switchTab('dashboard');
+            if (targetBtn.classList.contains('nav-data-sampah')) switchTab('data-sampah');
+            if (targetBtn.classList.contains('nav-statistik')) switchTab('statistik');
         });
 
-        menuDataSampah.addEventListener('click', (e) => {
-            e.preventDefault();
-            // Efek Aktif Menu Data Sampah
-            menuDataSampah.className = "flex items-center gap-3 px-4 py-3 bg-organik-light dark:bg-emerald-950/40 text-organik font-semibold rounded-xl transition-all";
-            menuDashboard.className = "flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group";
-            
-            // Tukar Tampilan Kontainer
-            viewDashboard.classList.add('hidden');
-            viewDataSampah.classList.remove('hidden');
-        });
-        console.log("Sistem Navigasi Tab: Berhasil diinisialisasi.");
+        // Set default tab pertama saat aplikasi dimuat
+        switchTab('dashboard');
+        console.log("Sistem Navigasi Hybrid (Desktop & Mobile) berhasil berjalan.");
     } else {
-        console.error("Sistem Navigasi Gagal: Pastikan ID 'menu-dashboard', 'menu-data-sampah', 'view-dashboard', dan 'view-data-sampah' sudah terpasang di file index.html Anda.");
+        console.error("Sistem Navigasi Gagal: Container view tidak ditemukan.");
     }
 
     // =========================================================================
@@ -51,21 +86,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateStatisticsCards(data) {
         let totalO = 0, totalN = 0, totalAll = 0;
         data.forEach(d => {
-            totalO += d.organik;
-            totalN += d.nonOrganik;
-            totalAll += d.total;
+            totalO += (d.organik || 0);
+            totalN += (d.nonOrganik || 0);
+            totalAll += (d.total || 0);
         });
 
-        document.getElementById('stat-organik').innerHTML = `${totalO.toFixed(1)} <span class="text-xs font-normal opacity-70">kg</span>`;
-        document.getElementById('stat-nonorganik').innerHTML = `${totalN.toFixed(1)} <span class="text-xs font-normal opacity-70">kg</span>`;
-        document.getElementById('stat-total').innerHTML = `${totalAll.toFixed(1)} <span class="text-xs font-normal opacity-70">kg</span>`;
+        const safeSetHTML = (id, html) => { if(document.getElementById(id)) document.getElementById(id).innerHTML = html; };
+        
+        safeSetHTML('stat-organik', `${totalO.toFixed(1)} <span class="text-xs font-normal opacity-70">kg</span>`);
+        safeSetHTML('stat-nonorganik', `${totalN.toFixed(1)} <span class="text-xs font-normal opacity-70">kg</span>`);
+        safeSetHTML('stat-total', `${totalAll.toFixed(1)} <span class="text-xs font-normal opacity-70">kg</span>`);
 
         const pctO = totalAll > 0 ? ((totalO / totalAll) * 100).toFixed(0) : 0;
         const pctN = totalAll > 0 ? ((totalN / totalAll) * 100).toFixed(0) : 0;
-        document.getElementById('stat-rasio').innerText = `O: ${pctO}% | N: ${pctN}%`;
         
-        document.getElementById('text-total-entri').innerText = data.length;
-        if(data.length > 0) {
+        if(document.getElementById('stat-rasio')) document.getElementById('stat-rasio').innerText = `O: ${pctO}% | N: ${pctN}%`;
+        if(document.getElementById('text-total-entri')) document.getElementById('text-total-entri').innerText = data.length;
+        
+        if(data.length > 0 && document.getElementById('text-periode')) {
             const dates = data.map(d => d.tanggal).sort();
             document.getElementById('text-periode').innerText = `${dates[0]} s/d ${dates[dates.length - 1]}`;
         }
@@ -91,14 +129,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         data.forEach(item => {
             const row = `
                 <tr class="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors">
-                    <td class="p-4 text-gray-600 dark:text-gray-400 font-medium">${item.tanggal}</td>
-                    <td class="p-4 font-semibold text-gray-900 dark:text-white">${item.kelas}</td>
-                    <td class="p-4 text-emerald-600 dark:text-emerald-400 font-medium">${item.organik.toFixed(1)}</td>
-                    <td class="p-4 text-orange-600 dark:text-orange-400 font-medium">${item.nonOrganik.toFixed(1)}</td>
-                    <td class="p-4 font-bold text-gray-900 dark:text-white bg-gray-50/50 dark:bg-gray-800/30">${item.total.toFixed(1)}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-400 font-medium">${item.tanggal || '-'}</td>
+                    <td class="p-4 font-semibold text-gray-900 dark:text-white">${item.kelas || '-'}</td>
+                    <td class="p-4 text-emerald-600 dark:text-emerald-400 font-medium">${(item.organik || 0).toFixed(1)}</td>
+                    <td class="p-4 text-orange-600 dark:text-orange-400 font-medium">${(item.nonOrganik || 0).toFixed(1)}</td>
+                    <td class="p-4 font-bold text-gray-900 dark:text-white bg-gray-50/50 dark:bg-gray-800/30">${(item.total || 0).toFixed(1)}</td>
                 </tr>
             `;
             tableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    function renderStatistikMatriks(data) {
+        const matrixBody = document.getElementById('table-body-matriks');
+        if (!matrixBody) return;
+
+        const tingkatGroups = {
+            'X': { entri: 0, organikTotal: 0, nonOrganikTotal: 0 },
+            'XI': { entri: 0, organikTotal: 0, nonOrganikTotal: 0 },
+            'XII': { entri: 0, organikTotal: 0, nonOrganikTotal: 0 }
+        };
+
+        data.forEach(item => {
+            let tingkat = item.tingkat;
+            
+            // Perbaikan Bug: Pengecekan XII harus dilakukan sebelum XI
+            if (!tingkat && item.kelas) {
+                const upperKelas = item.kelas.toUpperCase();
+                if (upperKelas.startsWith('XII')) tingkat = 'XII';
+                else if (upperKelas.startsWith('XI')) tingkat = 'XI';
+                else if (upperKelas.startsWith('X')) tingkat = 'X';
+            }
+
+            if (tingkat && tingkatGroups[tingkat]) {
+                tingkatGroups[tingkat].entri++;
+                tingkatGroups[tingkat].organikTotal += (item.organik || 0);
+                tingkatGroups[tingkat].nonOrganikTotal += (item.nonOrganik || 0);
+            }
+        });
+
+        matrixBody.innerHTML = "";
+
+        Object.keys(tingkatGroups).forEach(tk => {
+            const group = tingkatGroups[tk];
+            const avgO = group.entri > 0 ? (group.organikTotal / group.entri).toFixed(2) : "0.00";
+            const avgN = group.entri > 0 ? (group.nonOrganikTotal / group.entri).toFixed(2) : "0.00";
+
+            const row = `
+                <tr class="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors">
+                    <td class="p-4 text-gray-900 dark:text-white font-semibold">Tingkat ${tk}</td>
+                    <td class="p-4 text-gray-600 dark:text-gray-400 font-medium">${group.entri} Entri</td>
+                    <td class="p-4 text-emerald-600 dark:text-emerald-400 font-semibold">${avgO} kg</td>
+                    <td class="p-4 text-orange-600 dark:text-orange-400 font-semibold">${avgN} kg</td>
+                </tr>
+            `;
+            matrixBody.insertAdjacentHTML('beforeend', row);
         });
     }
 
@@ -110,19 +195,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         let totalO = 0, totalAll = 0;
 
         data.forEach(d => {
-            days[d.tanggal] = (days[d.tanggal] || 0) + d.total;
-            classes[d.kelas] = (classes[d.kelas] || 0) + d.total;
-            totalO += d.organik;
-            totalAll += d.total;
+            days[d.tanggal] = (days[d.tanggal] || 0) + (d.total || 0);
+            classes[d.kelas] = (classes[d.kelas] || 0) + (d.total || 0);
+            totalO += (d.organik || 0);
+            totalAll += (d.total || 0);
         });
 
         const topDay = Object.entries(days).sort((a,b)=>b[1]-a[1])[0]?.[0] || "-";
         const topClass = Object.entries(classes).sort((a,b)=>b[1]-a[1])[0]?.[0] || "-";
         const ratioO = totalAll > 0 ? (totalO / totalAll) * 100 : 0;
 
-        document.getElementById('insight-hari-tertinggi').innerText = topDay;
-        document.getElementById('insight-kelas-terbesar').innerText = topClass;
-        document.getElementById('insight-dominasi-rasio').innerText = ratioO > 50 ? "Didominasi Organik" : "Didominasi Non-Organik";
+        if(document.getElementById('insight-hari-tertinggi')) document.getElementById('insight-hari-tertinggi').innerText = topDay;
+        if(document.getElementById('insight-kelas-terbesar')) document.getElementById('insight-kelas-terbesar').innerText = topClass;
+        if(document.getElementById('insight-dominasi-rasio')) document.getElementById('insight-dominasi-rasio').innerText = ratioO > 50 ? "Didominasi Organik" : "Didominasi Non-Organik";
 
         let narasi = "";
         if (ratioO > 60) {
@@ -132,73 +217,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             narasi = `Rasio penumpukan terpantau seimbang antara organik dan non-organik. Pertahankan monitoring berkala serta tingkatkan edukasi pemilahan mandiri mulai dari ruang kelas terkecil.`;
         }
-        document.getElementById('insight-narasi').innerText = narasi;
+        
+        if(document.getElementById('insight-narasi')) document.getElementById('insight-narasi').innerText = narasi;
     }
 
     // =========================================================================
-    // 3. CORE INIT ENGINE (Pemanggilan Data & Handling Error Grafik)
+    // 3. CORE INIT ENGINE
     // =========================================================================
     async function loadDashboardCoreEngine() {
-        loader.classList.remove('opacity-0');
-        loader.style.display = 'flex';
+        if(loader) {
+            loader.classList.remove('opacity-0');
+            loader.style.display = 'flex';
+        }
 
         try {
-            // Ambil data dari spreadsheet (Akan otomatis beralih ke Dummy jika API 404)
             globalData = await SpreadsheetEngine.FetchRealtimeData();
             
             updateStatisticsCards(globalData);
             renderDataTable(globalData); 
+            renderStatistikMatriks(globalData);
+            generateAutomatedInterpretation(globalData);
             
-            // Bungkus inisialisasi chart agar jika file charts.js hilal/404, sisa sistem tidak mogok
             try {
                 if (typeof DashboardCharts !== 'undefined') {
                     DashboardCharts.Initialize(globalData);
                 } else {
-                    console.warn("DashboardCharts belum siap atau file charts.js tidak ditemukan.");
+                    console.warn("Modul DashboardCharts belum siap.");
                 }
             } catch (chartError) {
                 console.error("Gagal menggambar grafik objek Chart.js:", chartError);
             }
 
-            generateAutomatedInterpretation(globalData);
-            
             // Pasang filter interaktif
             if (typeof DashboardFilters !== 'undefined') {
                 DashboardFilters.Initialize(globalData, (filteredData) => {
                     updateStatisticsCards(filteredData);
                     renderDataTable(filteredData); 
+                    renderStatistikMatriks(filteredData);
+                    generateAutomatedInterpretation(filteredData);
                     try {
                         if (typeof DashboardCharts !== 'undefined') DashboardCharts.UpdateAll(filteredData);
                     } catch(e) { console.error(e); }
-                    generateAutomatedInterpretation(filteredData);
                 });
             }
 
         } catch (mainError) {
             console.error("Terjadi kesalahan sistem utama:", mainError);
         } finally {
-            loader.classList.add('opacity-0');
-            setTimeout(() => loader.style.display = 'none', 300);
+            if(loader) {
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.style.display = 'none', 300);
+            }
         }
     }
 
     // =========================================================================
     // 4. GLOBAL COMPONENT EVENT BINDINGS
     // =========================================================================
-    if(refreshBtn) refreshBtn.addEventListener('click', () => location.reload());
-    if(excelBtn) excelBtn.addEventListener('click', () => DataExporter.ExportToCSV(globalData));
-    if(pdfBtn) pdfBtn.addEventListener('click', () => DataExporter.ExportToPDF());
+    if(refreshBtn) refreshBtn.addEventListener('click', () => loadDashboardCoreEngine()); // Update tanpa hard-reload
+    if(excelBtn) excelBtn.addEventListener('click', () => typeof DataExporter !== 'undefined' ? DataExporter.ExportToCSV(globalData) : console.warn('DataExporter belum diinisialisasi.'));
+    if(pdfBtn) pdfBtn.addEventListener('click', () => typeof DataExporter !== 'undefined' ? DataExporter.ExportToPDF() : console.warn('DataExporter belum diinisialisasi.'));
 
     if(darkModeBtn) {
         darkModeBtn.addEventListener('click', () => {
             const docHtml = document.documentElement;
-            if(docHtml.classList.contains('dark')) {
-                docHtml.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                docHtml.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
+            docHtml.classList.toggle('dark');
+            localStorage.setItem('theme', docHtml.classList.contains('dark') ? 'dark' : 'light');
         });
     }
 
@@ -210,12 +294,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("Sinkronisasi otomatis basis data Google Spreadsheet sedang berjalan...");
         try {
             const updateFreshData = await SpreadsheetEngine.FetchRealtimeData();
-            updateStatisticsCards(updateFreshData);
-            renderDataTable(updateFreshData); 
+            globalData = updateFreshData; // Update variabel global agar fitur export tetap akurat
+            
+            updateStatisticsCards(globalData);
+            renderDataTable(globalData); 
+            renderStatistikMatriks(globalData); 
+            generateAutomatedInterpretation(globalData);
+            
             if (typeof DashboardCharts !== 'undefined') {
-                DashboardCharts.UpdateAll(updateFreshData);
+                DashboardCharts.UpdateAll(globalData);
             }
-            generateAutomatedInterpretation(updateFreshData);
         } catch(e) {
             console.error("Gagal sinkronisasi otomatis:", e);
         }
