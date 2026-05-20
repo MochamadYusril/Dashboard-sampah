@@ -46,19 +46,19 @@
                     </div>
                 </div>
                 <nav class="space-y-1">
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 bg-organik-light dark:bg-emerald-950/40 text-organik font-semibold rounded-xl transition-all">
+                    <a href="#" id="menu-dashboard" class="flex items-center gap-3 px-4 py-3 bg-organik-light dark:bg-emerald-950/40 text-organik font-semibold rounded-xl transition-all">
                         <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
+                    <a href="#" id="menu-data-sampah" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
                         <i class="fa-solid fa-dumpster w-5 group-hover:text-organik"></i> Data Sampah
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
+                    <a href="#" id="menu-statistik" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
                         <i class="fa-solid fa-chart-line w-5 group-hover:text-organik"></i> Statistik
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
+                    <a href="#" id="menu-export" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
                         <i class="fa-solid fa-file-arrow-down w-5 group-hover:text-organik"></i> Export
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
+                    <a href="#" id="menu-pengaturan" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
                         <i class="fa-solid fa-gear w-5 group-hover:text-organik"></i> Pengaturan
                     </a>
                 </nav>
@@ -177,75 +177,111 @@
                     </div>
                 </section>
 
-                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col justify-between h-[420px]">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-timeline text-organik"></i> Grafik Tren Harian Timbulan Sampah</h4>
-                            <span class="text-xs text-gray-400">(Satuan: kg)</span>
-                        </div>
-                        <div class="relative flex-1 min-h-0">
-                            <canvas id="chartTrenHarian"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[420px]">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> Peringkat 10 Kelas Teraktif</h4>
-                            <span class="text-xs text-gray-400">(Total Volume)</span>
-                        </div>
-                        <div class="relative flex-1 min-h-0">
-                            <canvas id="chartRankingKelas"></canvas>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 space-y-6">
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[360px]">
+                <div id="view-dashboard" class="space-y-6">
+                    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col justify-between h-[420px]">
                             <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-layer-group text-sky-500"></i> Komposisi Sampah Per Kelas</h4>
-                            </div>
-                            <div class="relative flex-1 min-h-0 overflow-y-auto max-h-[280px]">
-                                <canvas id="chartKomposisiKelas"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[250px]">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-building text-indigo-500"></i> Kontribusi Data Berdasarkan Tingkat (X, XI, XII)</h4>
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-timeline text-organik"></i> Grafik Tren Harian Timbulan Sampah</h4>
+                                <span class="text-xs text-gray-400">(Satuan: kg)</span>
                             </div>
                             <div class="relative flex-1 min-h-0">
-                                <canvas id="chartPerbandinganTingkat"></canvas>
+                                <canvas id="chartTrenHarian"></canvas>
                             </div>
                         </div>
-                    </div>
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[420px]">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> Peringkat 10 Kelas Teraktif</h4>
+                                <span class="text-xs text-gray-400">(Total Volume)</span>
+                            </div>
+                            <div class="relative flex-1 min-h-0">
+                                <canvas id="chartRankingKelas"></canvas>
+                            </div>
+                        </div>
+                    </section>
 
-                    <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-auto lg:h-[634px]">
-                        <div>
-                            <h4 class="font-bold text-gray-900 dark:text-white text-base mb-4 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-                                <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i> Interpretasi Otomatis & Insight
-                            </h4>
-                            <div class="space-y-4">
-                                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-organik">
-                                    <p class="text-xs text-gray-400 font-semibold uppercase">Puncak Timbulan Tertinggi</p>
-                                    <p id="insight-hari-tertinggi" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
+                    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[360px]">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-layer-group text-sky-500"></i> Komposisi Sampah Per Kelas</h4>
                                 </div>
-                                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-amber-500">
-                                    <p class="text-xs text-gray-400 font-semibold uppercase">Produsen Volume Terbesar</p>
-                                    <p id="insight-kelas-terbesar" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
+                                <div class="relative flex-1 min-h-0 overflow-y-auto max-h-[280px]">
+                                    <canvas id="chartKomposisiKelas"></canvas>
                                 </div>
-                                <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-purple-500">
-                                    <p class="text-xs text-gray-400 font-semibold uppercase">Dominasi Karakteristik</p>
-                                    <p id="insight-dominasi-rasio" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[250px]">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-building text-indigo-500"></i> Kontribusi Data Berdasarkan Tingkat (X, XI, XII)</h4>
+                                </div>
+                                <div class="relative flex-1 min-h-0">
+                                    <canvas id="chartPerbandinganTingkat"></canvas>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/20 dark:to-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-                            <h5 class="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-lightbulb"></i> Rekomendasi Aksi Akademik</h5>
-                            <p id="insight-narasi" class="text-xs md:text-sm text-emerald-950 dark:text-emerald-200/90 leading-relaxed font-medium">
-                                Mengevaluasi pola entri data operasional...
-                            </p>
+
+                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-auto lg:h-[634px]">
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base mb-4 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i> Interpretasi Otomatis & Insight
+                                </h4>
+                                <div class="space-y-4">
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-organik">
+                                        <p class="text-xs text-gray-400 font-semibold uppercase">Puncak Timbulan Tertinggi</p>
+                                        <p id="insight-hari-tertinggi" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-amber-500">
+                                        <p class="text-xs text-gray-400 font-semibold uppercase">Produsen Volume Terbesar</p>
+                                        <p id="insight-kelas-terbesar" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-purple-500">
+                                        <p class="text-xs text-gray-400 font-semibold uppercase">Dominasi Karakteristik</p>
+                                        <p id="insight-dominasi-rasio" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/20 dark:to-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
+                                <h5 class="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-lightbulb"></i> Rekomendasi Aksi Akademik</h5>
+                                <p id="insight-narasi" class="text-xs md:text-sm text-emerald-950 dark:text-emerald-200/90 leading-relaxed font-medium">
+                                    Mengevaluasi pola entri data operasional...
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                </div>
+
+                <div id="view-data-sampah" class="hidden animate-fadeIn">
+                    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
+                                    <i class="fa-solid fa-table-list text-organik"></i> Log Rekam Data Sampah Terklasifikasi
+                                </h4>
+                                <p class="text-xs text-gray-400 mt-0.5">Menampilkan log historis penimbangan sampah berdasarkan input real-time</p>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="bg-gray-50/70 dark:bg-gray-700/40 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                        <th class="p-4">Tanggal</th>
+                                        <th class="p-4">Kelas</th>
+                                        <th class="p-4 text-emerald-600 dark:text-emerald-400">Organik (kg)</th>
+                                        <th class="p-4 text-orange-600 dark:text-orange-400">Non-Organik (kg)</th>
+                                        <th class="p-4 bg-gray-100/50 dark:bg-gray-700/20">Total Volume (kg)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body-sampah" class="text-sm divide-y divide-gray-100 dark:divide-gray-700/50">
+                                    <tr>
+                                        <td colspan="5" class="p-8 text-center text-gray-400 dark:text-gray-500 font-medium">
+                                            <i class="fa-solid fa-circle-notch animate-spin text-xl text-organik mr-2"></i> Sinkronisasi repositori database...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
             </div>
         </main>
     </div>
