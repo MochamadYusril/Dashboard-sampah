@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // =========================================================================
     
     // --- GANTI URL DI BAWAH INI JIKA ANDA MELAKUKAN PENERAPAN BARU ---
-    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyR1ioSNTj9XeuOiwP6HvfLflgkLnxF_QoZrpsJkyhHAwPpyVgIf64fFHMtdeqgDbpG/exec'; 
+    const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw8_qdCUnO85U1LSMJXSJv7RxMt83FQEnWGVYCtjJRgOaYgr3yi5ONcSEcz4aypd3dM/exec'; 
 
     const daftarKelas = {
         'X': ['X-1', 'X-2', 'X-3', 'X-4', 'X-5', 'X-6', 'X-7', 'X-8', 'X-9', 'X-10'],
