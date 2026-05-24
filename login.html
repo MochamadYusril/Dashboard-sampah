@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Eco-SMAN 18 Bandung</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        organik: '#10B981',
+                        'organik-light': '#D1FAE5',
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .bg-pattern {
+            background-color: #f0fdf4;
+            background-image: radial-gradient(circle at 20% 50%, rgba(16,185,129,0.08) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 20%, rgba(59,130,246,0.06) 0%, transparent 50%),
+                              radial-gradient(circle at 60% 80%, rgba(249,115,22,0.05) 0%, transparent 50%);
+        }
+        .dark .bg-pattern {
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at 20% 50%, rgba(16,185,129,0.05) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 20%, rgba(59,130,246,0.04) 0%, transparent 50%);
+        }
+        .card-glass {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        .icon-float { animation: float 3s ease-in-out infinite; }
+        .input-focus:focus { box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+    </style>
+</head>
+<body class="bg-pattern dark:bg-pattern min-h-screen flex items-center justify-center p-4 font-sans antialiased transition-colors duration-300">
+
+    <!-- Dark mode toggle pojok kanan atas -->
+    <button id="dark-mode-toggle" class="fixed top-4 right-4 z-50 p-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm text-gray-500 dark:text-gray-300 hover:text-organik transition-all">
+        <i class="fa-solid fa-moon dark:hidden"></i>
+        <i class="fa-solid fa-sun hidden dark:inline"></i>
+    </button>
+
+    <div class="w-full max-w-md">
+        <!-- Logo & Judul -->
+        <div class="text-center mb-8">
+            <div class="icon-float inline-flex items-center justify-center w-20 h-20 bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 mb-4">
+                <i class="fa-solid fa-recycle text-3xl text-organik"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Eco-SMAN 18</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Dashboard Monitoring Sampah — Bandung Hub</p>
+        </div>
+
+        <!-- Card Login -->
+        <div id="login-card" class="card-glass bg-white/90 dark:bg-gray-800/90 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 p-8">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Masuk ke Sistem</h2>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mb-6">Gunakan akun yang telah didaftarkan oleh administrator.</p>
+
+            <!-- Alert Error -->
+            <div id="alert-error" class="hidden mb-4 flex items-center gap-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-xl px-4 py-3 text-sm">
+                <i class="fa-solid fa-circle-exclamation flex-shrink-0"></i>
+                <span id="alert-error-text">Username atau password salah.</span>
+            </div>
+
+            <!-- Alert Sukses -->
+            <div id="alert-success" class="hidden mb-4 flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-xl px-4 py-3 text-sm">
+                <i class="fa-solid fa-circle-check flex-shrink-0"></i>
+                <span>Login berhasil! Mengalihkan ke dashboard...</span>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Username -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user text-gray-300 dark:text-gray-500 text-sm"></i>
+                        </div>
+                        <input id="input-username" type="text" placeholder="Masukkan username..."
+                            class="input-focus w-full pl-9 pr-4 py-3 text-sm bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-white placeholder-gray-300 dark:placeholder-gray-500 focus:outline-none focus:border-organik transition-all"
+                            autocomplete="username">
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-gray-300 dark:text-gray-500 text-sm"></i>
+                        </div>
+                        <input id="input-password" type="password" placeholder="Masukkan password..."
+                            class="input-focus w-full pl-9 pr-10 py-3 text-sm bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-white placeholder-gray-300 dark:placeholder-gray-500 focus:outline-none focus:border-organik transition-all"
+                            autocomplete="current-password">
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-3 flex items-center text-gray-300 dark:text-gray-500 hover:text-organik transition-colors">
+                            <i class="fa-solid fa-eye text-sm" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tombol Login -->
+                <button id="btn-login" class="w-full mt-2 bg-organik hover:bg-emerald-600 active:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm shadow-emerald-200 dark:shadow-emerald-900/30">
+                    <i class="fa-solid fa-right-to-bracket" id="btn-login-icon"></i>
+                    <span id="btn-login-text">Masuk</span>
+                </button>
+            </div>
+
+            <!-- Info -->
+            <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700">
+                <p class="text-xs text-center text-gray-400">
+                    Tidak punya akun? Hubungi <span class="font-semibold text-organik">Administrator</span> sistem.
+                </p>
+            </div>
+        </div>
+
+        <p class="text-center text-xs text-gray-400 mt-6">&copy; MYSRL 2026 · Eco-SMAN 18 Bandung</p>
+    </div>
+
+    <script>
+        // =========================================================================
+        // CONFIG — URL Apps Script yang sudah di-deploy
+        // =========================================================================
+        const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_AeRTOVp0z3l_nu8fVS6NDAQOC86C235PxIJk8LoKInRlx89nIha-lpm1yET6ivDa/exec';
+
+        // =========================================================================
+        // STORAGE HELPER — localStorage → sessionStorage → Cookie (3 lapis fallback)
+        // Mengatasi "Tracking Prevention blocked access to storage"
+        // =========================================================================
+        const Storage = {
+            _cookieName: 'eco_data',
+
+            set(key, value) {
+                const str = JSON.stringify(value);
+                try { localStorage.setItem(key, str); } catch(e) {}
+                try { sessionStorage.setItem(key, str); } catch(e) {}
+                // Cookie sebagai fallback terakhir — berlaku 8 jam
+                try {
+                    const expires = new Date(Date.now() + 8*60*60*1000).toUTCString();
+                    const all = this._readCookie();
+                    all[key] = value;
+                    document.cookie = `${this._cookieName}=${encodeURIComponent(JSON.stringify(all))};expires=${expires};path=/;SameSite=Lax`;
+                } catch(e) {}
+            },
+
+            get(key) {
+                try { const v = localStorage.getItem(key); if (v) return JSON.parse(v); } catch(e) {}
+                try { const v = sessionStorage.getItem(key); if (v) return JSON.parse(v); } catch(e) {}
+                try { const all = this._readCookie(); if (all[key] !== undefined) return all[key]; } catch(e) {}
+                return null;
+            },
+
+            remove(key) {
+                try { localStorage.removeItem(key); } catch(e) {}
+                try { sessionStorage.removeItem(key); } catch(e) {}
+                try {
+                    const all = this._readCookie();
+                    delete all[key];
+                    document.cookie = `${this._cookieName}=${encodeURIComponent(JSON.stringify(all))};path=/;SameSite=Lax`;
+                } catch(e) {}
+            },
+
+            _readCookie() {
+                try {
+                    const match = document.cookie.split(';').find(c => c.trim().startsWith(this._cookieName + '='));
+                    if (!match) return {};
+                    return JSON.parse(decodeURIComponent(match.trim().substring(this._cookieName.length + 1)));
+                } catch(e) { return {}; }
+            }
+        };
+
+        // =========================================================================
+        // DARK MODE
+        // =========================================================================
+        try {
+            const savedTheme = Storage.get('theme');
+            if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+        } catch(e) {}
+
+        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            Storage.set('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // =========================================================================
+        // CEK SESSION — Jika sudah login, langsung ke dashboard
+        // =========================================================================
+        const session = Storage.get('eco_session');
+        if (session && session.username && session.loginTime) {
+            const sessionAge = Date.now() - session.loginTime;
+            const maxAge = 8 * 60 * 60 * 1000; // 8 jam
+            if (sessionAge < maxAge) {
+                window.location.href = 'index.html';
+            } else {
+                Storage.remove('eco_session');
+            }
+        }
+
+        // =========================================================================
+        // TOGGLE SHOW/HIDE PASSWORD
+        // =========================================================================
+        document.getElementById('toggle-password').addEventListener('click', () => {
+            const input = document.getElementById('input-password');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        // =========================================================================
+        // AKUN DEMO — Dipakai saat API gagal/tidak tersedia
+        // Pastikan sama persis dengan data di sheet Users!
+        // =========================================================================
+        const DEMO_USERS = [
+            { username: 'admin',  password: 'admin123',  nama: 'Administrator',    role: 'Admin'  },
+            { username: 'admin',  password: 'admin',     nama: 'Administrator',    role: 'Admin'  },
+            { username: 'guru',   password: 'guru2026',  nama: 'Guru Pembimbing',  role: 'Editor' },
+            { username: 'siswa',  password: 'siswa2026', nama: 'Petugas Kelas',    role: 'Viewer' }
+        ];
+
+        // =========================================================================
+        // LOGIN HANDLER
+        // =========================================================================
+        async function doLogin() {
+            const username = document.getElementById('input-username').value.trim();
+            const password = document.getElementById('input-password').value;
+            const btn = document.getElementById('btn-login');
+            const btnText = document.getElementById('btn-login-text');
+            const btnIcon = document.getElementById('btn-login-icon');
+            const alertError = document.getElementById('alert-error');
+            const alertErrorText = document.getElementById('alert-error-text');
+            const alertSuccess = document.getElementById('alert-success');
+            const card = document.getElementById('login-card');
+
+            if (!username || !password) {
+                alertErrorText.textContent = 'Username dan password tidak boleh kosong.';
+                alertError.classList.remove('hidden');
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 400);
+                return;
+            }
+
+            // State loading
+            alertError.classList.add('hidden');
+            alertSuccess.classList.add('hidden');
+            btn.disabled = true;
+            btnText.textContent = 'Memverifikasi...';
+            btnIcon.className = 'fa-solid fa-circle-notch animate-spin';
+
+            function loginSuccess(userData, isDemo) {
+                const sessionData = {
+                    username: userData.username,
+                    nama: userData.nama || userData.username,
+                    role: userData.role || 'Viewer',
+                    loginTime: Date.now()
+                };
+                Storage.set('eco_session', sessionData);
+
+                alertSuccess.classList.remove('hidden');
+                btnText.textContent = isDemo ? 'Berhasil! (Mode Demo)' : 'Berhasil!';
+                btnIcon.className = 'fa-solid fa-check';
+                btn.classList.remove('bg-organik');
+                btn.classList.add('bg-emerald-600');
+
+                setTimeout(() => { window.location.href = 'index.html'; }, 900);
+            }
+
+            function loginFailed(msg) {
+                alertErrorText.textContent = msg || 'Username atau password salah.';
+                alertError.classList.remove('hidden');
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 400);
+                btn.disabled = false;
+                btnText.textContent = 'Masuk';
+                btnIcon.className = 'fa-solid fa-right-to-bracket';
+            }
+
+            // --- Jika URL kosong, langsung pakai Mode Demo ---
+            if (!AUTH_SCRIPT_URL) {
+                const found = DEMO_USERS.find(u => u.username === username && u.password === password);
+                if (found) loginSuccess(found, true);
+                else loginFailed('Username atau password salah.');
+                return;
+            }
+
+            // --- Jika URL diisi, coba fetch ke Apps Script ---
+            let apiOk = false;
+            try {
+                const payload = new URLSearchParams({
+                    action: 'login',
+                    username: username,
+                    password: password,
+                    loginTime: new Date().toISOString(),
+                    userAgent: navigator.userAgent.substring(0, 100)
+                });
+
+                const response = await fetch(AUTH_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: payload,
+                    redirect: 'follow'
+                });
+
+                // Ambil teks dulu, jangan langsung .json() karena bisa berupa HTML redirect
+                const rawText = await response.text();
+                console.log('API raw response:', rawText.substring(0, 200));
+
+                // Coba parse sebagai JSON
+                let result = null;
+                try {
+                    // Kadang Apps Script membungkus response dengan karakter aneh, bersihkan dulu
+                    const cleanText = rawText.trim().replace(/^\)\]\}'/, '');
+                    result = JSON.parse(cleanText);
+                } catch(parseErr) {
+                    // Response bukan JSON (HTML redirect / error page) → pakai Mode Demo
+                    console.warn('Response bukan JSON, beralih ke Mode Demo.');
+                    result = null;
+                }
+
+                if (result && typeof result.success !== 'undefined') {
+                    apiOk = true;
+                    if (result.success) loginSuccess(result, false);
+                    else loginFailed(result.message || 'Username atau password salah.');
+                }
+
+            } catch (err) {
+                console.warn('Fetch gagal:', err.message);
+            }
+
+            // Fallback ke Mode Demo jika API tidak memberikan response JSON valid
+            if (!apiOk) {
+                console.info('Menggunakan Mode Demo sebagai fallback.');
+                const found = DEMO_USERS.find(u => u.username === username && u.password === password);
+                if (found) loginSuccess(found, true);
+                else loginFailed('Username atau password salah.');
+            }
+        }
+
+        document.getElementById('btn-login').addEventListener('click', doLogin);
+
+        // Enter key support
+        ['input-username', 'input-password'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') doLogin();
+            });
+        });
+    </script>
+</body>
+</html>
