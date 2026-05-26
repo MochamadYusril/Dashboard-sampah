@@ -2,9 +2,10 @@
 <html lang="id" class="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="icon" type="image/png" href="img/logo-sman18.png">
     <title>Dashboard Sampah SMAN 18 Bandung</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,262 +26,716 @@
             }
         }
     </script>
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 64px;
+            --transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html, body { height: 100%; overflow: hidden; }
+
+        #app-shell {
+            display: flex;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* ══════════════════════════════════════════════
+           SIDEBAR — DESKTOP ONLY
+        ══════════════════════════════════════════════ */
+        #sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            flex-shrink: 0;
+            transition: width var(--transition), min-width var(--transition);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Desktop collapsed */
+        #sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+            min-width: var(--sidebar-collapsed-width);
+        }
+
+        /* Hide labels when collapsed */
+        .sidebar-label {
+            transition: opacity var(--transition), max-width var(--transition);
+            white-space: nowrap;
+            overflow: hidden;
+            max-width: 200px;
+            opacity: 1;
+        }
+        #sidebar.collapsed .sidebar-label {
+            max-width: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Logo area */
+        .sidebar-logo-area {
+            transition: opacity var(--transition), max-width var(--transition);
+            overflow: hidden;
+            max-width: 200px;
+        }
+        #sidebar.collapsed .sidebar-logo-area {
+            max-width: 0;
+            opacity: 0;
+        }
+
+        /* Nav items centered when collapsed */
+        #sidebar.collapsed nav a {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        /* Bottom section when collapsed */
+        #sidebar.collapsed #sidebar-bottom {
+            padding-left: 6px;
+            padding-right: 6px;
+            align-items: center;
+        }
+        #sidebar.collapsed #user-info-block { display: none; }
+        #sidebar.collapsed .copyright-text  { display: none; }
+        #sidebar.collapsed #dark-mode-toggle {
+            justify-content: center;
+            padding-left: 0; padding-right: 0;
+        }
+        #sidebar.collapsed #btn-logout {
+            justify-content: center;
+            padding-left: 0; padding-right: 0;
+        }
+
+        /* Collapsed bottom icons — show user avatar as clickable */
+        #sidebar.collapsed #sidebar-avatar-mini { display: flex !important; }
+        #sidebar-avatar-mini { display: none; }
+
+        /* Tooltip on hover when collapsed */
+        #sidebar.collapsed nav a { position: relative; }
+        #sidebar.collapsed nav a[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: calc(var(--sidebar-collapsed-width) + 6px);
+            top: 50%; transform: translateY(-50%);
+            background: rgba(17,24,39,0.92);
+            color: #fff;
+            font-size: 0.7rem; font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            z-index: 9999;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        }
+
+        /* Chevron rotation */
+        #btn-desktop-toggle { transition: transform var(--transition); }
+        #sidebar.collapsed #btn-desktop-toggle { transform: rotate(180deg); }
+
+        /* MOBILE: hide sidebar entirely */
+        @media (max-width: 767px) {
+            #sidebar { display: none !important; }
+        }
+
+        /* ══════════════════════════════════════════════
+           MAIN CONTENT
+        ══════════════════════════════════════════════ */
+        #main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        #page-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        /* Mobile bottom padding for nav bar */
+        @media (max-width: 767px) {
+            #page-content { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+        }
+        @media (min-width: 768px) {
+            #page-content { padding-bottom: 0; }
+        }
+
+        /* ══════════════════════════════════════════════
+           MOBILE BOTTOM NAV
+        ══════════════════════════════════════════════ */
+        #mobile-bottom-nav { display: none; }
+        @media (max-width: 767px) { #mobile-bottom-nav { display: flex; } }
+
+        .mobile-nav-btn {
+            flex: 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 3px; padding: 8px 4px;
+            border-radius: 12px;
+            transition: all 0.18s ease;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-nav-btn i   { font-size: 1.2rem; transition: transform 0.18s ease; }
+        .mobile-nav-btn span{ font-size: 0.6rem; font-weight: 600; letter-spacing: 0.02em; }
+        .mobile-nav-btn.active i { transform: scale(1.12); }
+        .mobile-nav-btn::before {
+            content: '';
+            position: absolute; top: 5px; left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 24px; height: 3px;
+            background: #10B981; border-radius: 2px;
+            transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .mobile-nav-btn.active::before { transform: translateX(-50%) scaleX(1); }
+
+        /* ══════════════════════════════════════════════
+           MOBILE HERO BANNER — Animated waste scene
+        ══════════════════════════════════════════════ */
+        #mobile-hero {
+            display: none;
+            position: relative;
+            overflow: hidden;
+            height: 160px;
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #1a3a1a 100%);
+        }
+        @media (max-width: 767px) { #mobile-hero { display: block; } }
+
+        /* Ground strip */
+        #mobile-hero .ground {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 36px;
+            background: linear-gradient(180deg, #14532d 0%, #0f3d20 100%);
+            border-radius: 16px 16px 0 0;
+        }
+
+        /* Floating particles */
+        @keyframes floatUp {
+            0%   { transform: translateY(0) rotate(0deg); opacity: 0.9; }
+            100% { transform: translateY(-140px) rotate(360deg); opacity: 0; }
+        }
+        @keyframes sway {
+            0%,100% { transform: translateX(0); }
+            50%      { transform: translateX(6px); }
+        }
+        @keyframes bounce-bin {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-5px); }
+        }
+        @keyframes leaf-fall {
+            0%   { transform: translateY(-10px) rotate(0deg) translateX(0); opacity:1; }
+            100% { transform: translateY(100px) rotate(180deg) translateX(20px); opacity:0; }
+        }
+        @keyframes shimmer {
+            0%,100% { opacity: 0.5; }
+            50%      { opacity: 1; }
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+        }
+        .leaf {
+            position: absolute;
+            font-size: 1.1rem;
+            animation: leaf-fall linear infinite;
+        }
+        .bin-organic {
+            position: absolute;
+            bottom: 36px; left: 22%;
+            font-size: 2.4rem;
+            animation: bounce-bin 2.2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+        .bin-nonorganic {
+            position: absolute;
+            bottom: 36px; right: 22%;
+            font-size: 2.4rem;
+            animation: bounce-bin 2.8s ease-in-out infinite 0.5s;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+        .hero-label-org {
+            position: absolute;
+            bottom: 42px; left: calc(22% - 16px);
+            font-size: 0.55rem; font-weight: 700;
+            color: #6ee7b7; letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .hero-label-non {
+            position: absolute;
+            bottom: 42px; right: calc(22% - 24px);
+            font-size: 0.55rem; font-weight: 700;
+            color: #fdba74; letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .hero-center-text {
+            position: absolute;
+            top: 16px; left: 50%; transform: translateX(-50%);
+            text-align: center; white-space: nowrap;
+        }
+        .hero-center-text h2 {
+            font-size: 0.8rem; font-weight: 800;
+            color: #fff; letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .hero-center-text p {
+            font-size: 0.6rem; color: #a7f3d0;
+            margin-top: 2px; font-weight: 500;
+        }
+
+        /* Stats overlay on hero */
+        .hero-stat-org {
+            position: absolute;
+            top: 14px; left: 12px;
+            background: rgba(16,185,129,0.22);
+            border: 1px solid rgba(110,231,183,0.35);
+            backdrop-filter: blur(6px);
+            border-radius: 12px;
+            padding: 6px 10px;
+        }
+        .hero-stat-non {
+            position: absolute;
+            top: 14px; right: 12px;
+            background: rgba(249,115,22,0.22);
+            border: 1px solid rgba(253,186,116,0.35);
+            backdrop-filter: blur(6px);
+            border-radius: 12px;
+            padding: 6px 10px;
+        }
+        .hero-stat-org .val, .hero-stat-non .val {
+            font-size: 1rem; font-weight: 800; color: #fff;
+            line-height: 1;
+        }
+        .hero-stat-org .lbl { font-size: 0.55rem; color: #6ee7b7; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 1px; }
+        .hero-stat-non .lbl { font-size: 0.55rem; color: #fdba74; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 1px; }
+
+        /* ══════════════════════════════════════════════
+           MISC
+        ══════════════════════════════════════════════ */
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.25s ease forwards; }
+
+        #loading-overlay { background: rgba(255,255,255,0.9); }
+        .dark #loading-overlay { background: rgba(17,24,39,0.9); }
+
+        #page-content::-webkit-scrollbar { width: 4px; }
+        #page-content::-webkit-scrollbar-track { background: transparent; }
+        #page-content::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        .dark #page-content::-webkit-scrollbar-thumb { background: #374151; }
+
+        @keyframes ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            25%      { transform: translateX(-7px); }
+            75%      { transform: translateX(7px); }
+    }
+.animate-shake { animation: shake 0.35s ease-in-out; }
+    </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans antialiased transition-colors duration-200">
 
-    <div id="loading-overlay" class="fixed inset-0 bg-white/80 dark:bg-gray-900/80 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="fixed inset-0 z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-organik border-t-transparent"></div>
         <p class="mt-4 font-medium text-gray-600 dark:text-gray-300">Memuat data real-time...</p>
     </div>
 
-    <div class="flex h-screen overflow-hidden">
-        <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col justify-between p-5 z-20">
-            <div>
-                <div class="flex items-center gap-3 px-2 py-3 mb-6 border-b border-gray-100 dark:border-gray-700">
-                    <div class="bg-gray-100 dark:bg-gray-700 p-1.5 rounded-xl flex items-center justify-center shadow-sm">
-                        <img src="img/logo-sman18.png" alt="Logo" class="w-12 h-12 object-contain">
+    <!-- App Shell -->
+    <div id="app-shell">
+
+        <!-- ═══════════════ SIDEBAR (DESKTOP ONLY) ═══════════════ -->
+        <aside id="sidebar" class="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+
+            <!-- Header Row -->
+            <div class="flex items-center justify-between px-3 py-4 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="bg-gray-100 dark:bg-gray-700 p-1.5 rounded-xl flex-shrink-0">
+                        <img src="img/logo-sman18.png" alt="Logo" class="w-8 h-8 object-contain">
                     </div>
-                    <div>
-                        <h2 class="font-bold text-sm tracking-wide text-gray-900 dark:text-white uppercase">Eco-SMAN 18</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Bandung Hub Eco-system</p>
+                    <div class="sidebar-logo-area">
+                        <h2 class="font-bold text-xs tracking-widest text-gray-900 dark:text-white uppercase leading-tight">Eco-SMAN 18</h2>
+                        <p class="text-xs text-gray-400 leading-tight">Bandung Hub</p>
                     </div>
                 </div>
-
-                <nav class="space-y-1">
-                    <a href="#" id="menu-dashboard" class="flex items-center gap-3 px-4 py-3 bg-organik-light dark:bg-emerald-950/40 text-organik font-semibold rounded-xl transition-all">
-                        <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
-                    </a>
-                    <a href="#" id="menu-input" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
-                        <i class="fa-solid fa-pen-to-square w-5 group-hover:text-organik"></i> Input Data
-                    </a>
-                    <a href="#" id="menu-data-sampah" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
-                        <i class="fa-solid fa-dumpster w-5 group-hover:text-organik"></i> Data Sampah
-                    </a>
-                    <a href="#" id="menu-statistik" class="flex items-center gap-3 px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
-                        <i class="fa-solid fa-chart-line w-5 group-hover:text-organik"></i> Statistik
-                    </a>
-                </nav>
+                <button id="btn-desktop-toggle" title="Toggle sidebar"
+                    class="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-colors flex-shrink-0">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
             </div>
-            
-            <div class="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-3">
 
-                <!-- Info User yang Login -->
-                <div class="flex items-center gap-3 px-3 py-2.5 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
-                    <div id="user-avatar" class="w-9 h-9 flex-shrink-0 rounded-xl bg-organik text-white text-sm font-bold flex items-center justify-center shadow-sm">
-                        --
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p id="user-nama" class="text-sm font-semibold text-gray-800 dark:text-white truncate">Memuat...</p>
-                        <p id="user-role" class="text-xs text-gray-400 dark:text-gray-500">-</p>
+            <!-- Nav -->
+            <nav class="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto overflow-x-hidden">
+                <a href="#" id="menu-dashboard" data-tooltip="Dashboard"
+                    class="nav-item flex items-center gap-3 px-3 py-2.5 bg-organik-light dark:bg-emerald-950/40 text-organik font-semibold rounded-xl transition-all">
+                    <i class="fa-solid fa-chart-pie w-5 text-center flex-shrink-0 text-base"></i>
+                    <span class="sidebar-label text-sm">Dashboard</span>
+                </a>
+                <a href="#" id="menu-input" data-tooltip="Input Data"
+                    class="nav-item flex items-center gap-3 px-3 py-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
+                    <i class="fa-solid fa-pen-to-square w-5 text-center flex-shrink-0 text-base group-hover:text-organik"></i>
+                    <span class="sidebar-label text-sm">Input Data</span>
+                </a>
+                <a href="#" id="menu-data-sampah" data-tooltip="Data Sampah"
+                    class="nav-item flex items-center gap-3 px-3 py-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
+                    <i class="fa-solid fa-dumpster w-5 text-center flex-shrink-0 text-base group-hover:text-organik"></i>
+                    <span class="sidebar-label text-sm">Data Sampah</span>
+                </a>
+                <a href="#" id="menu-statistik" data-tooltip="Statistik"
+                    class="nav-item flex items-center gap-3 px-3 py-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all group">
+                    <i class="fa-solid fa-chart-line w-5 text-center flex-shrink-0 text-base group-hover:text-organik"></i>
+                    <span class="sidebar-label text-sm">Statistik</span>
+                </a>
+            </nav>
+
+            <!-- Bottom -->
+            <div id="sidebar-bottom" class="px-2 pb-4 space-y-1.5 border-t border-gray-100 dark:border-gray-700 pt-3 flex-shrink-0">
+
+                <!-- User Info (full) -->
+                <div id="user-info-block" class="flex items-center gap-2.5 px-2 py-2 bg-gray-50 dark:bg-gray-700/40 rounded-xl">
+                    <div id="user-avatar" class="w-8 h-8 flex-shrink-0 rounded-lg bg-organik text-white text-xs font-bold flex items-center justify-center">--</div>
+                    <div class="flex-1 min-w-0 sidebar-label" style="max-width:160px">
+                        <p id="user-nama" class="text-xs font-semibold text-gray-800 dark:text-white truncate leading-tight">Memuat...</p>
+                        <p id="user-role" class="text-xs text-gray-400 truncate leading-tight">-</p>
                     </div>
                 </div>
 
-                <!-- Dark Mode Toggle -->
-                <button id="dark-mode-toggle" class="flex items-center justify-between w-full px-4 py-2.5 bg-gray-100 dark:bg-gray-700 rounded-xl text-sm font-medium transition-colors">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-moon"></i> Mode Gelap</span>
-                    <div class="w-8 h-4 bg-gray-300 dark:bg-organik rounded-full relative transition-colors">
-                        <div class="w-3 h-3 bg-white rounded-full absolute top-0.5 left-0.5 dark:left-4.5 transition-all"></div>
+                <!-- User avatar icon when collapsed -->
+                <button id="sidebar-avatar-mini" title="Profil"
+                    class="w-full flex items-center justify-center py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                    <div id="user-avatar-mini" class="w-8 h-8 rounded-lg bg-organik text-white text-xs font-bold flex items-center justify-center">--</div>
+                </button>
+
+                <!-- Dark mode toggle -->
+                <button id="dark-mode-toggle"
+                    class="flex items-center justify-between w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-xs font-medium transition-colors overflow-hidden">
+                    <span class="toggle-label flex items-center gap-2 sidebar-label whitespace-nowrap">
+                        <i class="fa-solid fa-moon flex-shrink-0 text-base"></i>
+                        <span class="sidebar-label">Mode Gelap</span>
+                    </span>
+                    <div class="w-8 h-4 bg-gray-300 dark:bg-organik rounded-full relative transition-colors flex-shrink-0 ml-1">
+                        <div class="w-3 h-3 bg-white rounded-full absolute top-0.5 left-0.5 dark:left-[18px] transition-all"></div>
                     </div>
                 </button>
 
-                <!-- Tombol Logout -->
-                <button id="btn-logout" class="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all">
-                    <i class="fa-solid fa-right-from-bracket w-4"></i>
-                    <span>Keluar</span>
+                <!-- Logout -->
+                <button id="btn-logout"
+                    class="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all overflow-hidden">
+                    <i class="fa-solid fa-right-from-bracket flex-shrink-0 text-base"></i>
+                    <span class="logout-label sidebar-label">Keluar</span>
+                </button>
+                <button id="btn-login-sidebar"
+                    class="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium
+                           text-emerald-600 dark:text-emerald-400
+                           hover:bg-emerald-50 dark:hover:bg-emerald-950/30
+                           rounded-xl transition-all overflow-hidden">
+                    <i class="fa-solid fa-right-to-bracket flex-shrink-0 text-base"></i>
+                    <span class="sidebar-label">Masuk / Login</span>
                 </button>
 
-                <div class="text-center text-xs text-gray-400">
-                    &copy; MYSRL 2026
-                </div>
+                <p class="copyright-text text-center text-xs text-gray-400 pt-0.5">&copy; MYSRL 2026</p>
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 focus:outline-none relative pb-20 md:pb-0">
-            
-            <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="hidden sm:block p-2.5 bg-gray-100 dark:bg-gray-700 rounded-full">
-                        <i class="fa-solid fa-recycle text-2xl text-organik"></i>
+        <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+        <div id="main-content">
+
+            <!-- Desktop Header -->
+            <header id="main-header" class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 px-4 md:px-5 h-16 flex items-center justify-between gap-4 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <!-- Desktop toggle in header -->
+                    <button id="btn-header-toggle" class="hidden md:flex flex-shrink-0 p-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" title="Toggle sidebar">
+                        <i class="fa-solid fa-bars text-sm"></i>
+                    </button>
+                    <div class="hidden sm:flex p-2 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0">
+                        <i class="fa-solid fa-recycle text-base text-organik"></i>
                     </div>
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard Pengumpulan Sampah SMAN 18 Bandung</h1>
-                        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400">Periode Aktif: <span id="text-periode" class="font-medium">-</span> | Total Data Entri: <span id="text-total-entri" class="font-medium">0</span></p>
+                    <div class="min-w-0">
+                        <h1 class="text-sm md:text-base font-bold text-gray-900 dark:text-white tracking-tight truncate">Dashboard Sampah SMAN 18 Bandung</h1>
+                        <p class="text-xs text-gray-400 hidden sm:block">
+                            Periode: <span id="text-periode" class="font-medium text-gray-600 dark:text-gray-300">-</span>
+                            <span class="mx-1 text-gray-300">·</span>
+                            Entri: <span id="text-total-entri" class="font-medium text-gray-600 dark:text-gray-300">0</span>
+                        </p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3 self-end sm:self-auto">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded-full">
-                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span> Real-time
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded-full">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span> Real-time
                     </span>
-                    <button id="btn-refresh" class="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm transition-all">
-                        <i class="fa-solid fa-rotate"></i>
+                    <!-- Mobile: show title info -->
+                    <span class="sm:hidden text-xs text-gray-400">
+                        <span id="text-total-entri-mobile" class="font-semibold text-gray-700 dark:text-gray-200">0</span> entri
+                    </span>
+                    <button id="btn-refresh" class="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm transition-all active:scale-95">
+                        <i class="fa-solid fa-rotate text-sm"></i>
                     </button>
                 </div>
             </header>
 
-            <div class="p-6 space-y-6 max-w-[1600px] mx-auto">
-                
-                <div id="view-dashboard" class="space-y-6">
-                    <section class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 items-center justify-between">
-                        <div class="flex flex-wrap items-center gap-3 w-full">
-                            <div class="w-full sm:w-auto min-w-[150px]">
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Pilih Tingkat</label>
-                                <select id="filter-tingkat" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-700 dark:text-white">
-                                    <option value="ALL">Semua Tingkat</option>
-                                </select>
-                            </div>
-                            <div class="w-full sm:w-auto min-w-[150px]">
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Pilih Kelas</label>
-                                <select id="filter-kelas" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-700 dark:text-white">
-                                    <option value="ALL">Semua Kelas</option>
-                                </select>
-                            </div>
-                            <div class="w-full sm:w-auto min-w-[180px]">
-                                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Filter Tanggal</label>
-                                <input type="date" id="filter-tanggal" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-700 dark:text-white">
-                            </div>
-                        </div>
-                    </section>
+            <!-- Page Content -->
+            <div id="page-content">
 
-                    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group duration-300">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wide">Total Sampah Organik</p>
-                                    <h3 id="stat-organik" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mt-2">0 <span class="text-sm font-normal text-gray-400">kg</span></h3>
-                                </div>
-                                <div class="p-3 bg-organik-light dark:bg-emerald-950/60 rounded-xl text-organik group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-seedling text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group duration-300">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wide">Total Non-Organik</p>
-                                    <h3 id="stat-nonorganik" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mt-2">0 <span class="text-sm font-normal text-gray-400">kg</span></h3>
-                                </div>
-                                <div class="p-3 bg-nonorganik-light dark:bg-orange-950/60 rounded-xl text-nonorganik group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-bottle-water text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group duration-300">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wide">Total Keseluruhan</p>
-                                    <h3 id="stat-total" class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mt-2">0 <span class="text-sm font-normal text-gray-400">kg</span></h3>
-                                </div>
-                                <div class="p-3 bg-blue-50 dark:bg-blue-950/60 rounded-xl text-blue-500 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-scale-balanced text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group duration-300">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-400 uppercase tracking-wide">Rasio Karakteristik</p>
-                                    <h3 id="stat-rasio" class="text-lg md:text-xl font-bold text-gray-900 dark:text-white mt-2.5">O: 50% | N: 50%</h3>
-                                </div>
-                                <div class="p-3 bg-purple-50 dark:bg-purple-950/60 rounded-xl text-purple-500 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-chart-bar text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                <!-- ══ MOBILE HERO BANNER (only on mobile) ══ -->
+                <div id="mobile-hero">
+                    <!-- Background particles — organic (green) -->
+                    <div class="particle" style="width:8px;height:8px;background:#6ee7b7;left:18%;bottom:40px;animation-duration:3.2s;animation-delay:0s;opacity:0.8"></div>
+                    <div class="particle" style="width:5px;height:5px;background:#34d399;left:28%;bottom:30px;animation-duration:2.6s;animation-delay:0.8s"></div>
+                    <div class="particle" style="width:6px;height:6px;background:#a7f3d0;left:35%;bottom:36px;animation-duration:3.8s;animation-delay:1.4s"></div>
+                    <div class="particle" style="width:4px;height:4px;background:#10b981;left:12%;bottom:28px;animation-duration:2.9s;animation-delay:0.3s"></div>
+                    <!-- Non-organic (orange) -->
+                    <div class="particle" style="width:7px;height:7px;background:#fdba74;right:18%;bottom:40px;animation-duration:3.0s;animation-delay:0.5s"></div>
+                    <div class="particle" style="width:5px;height:5px;background:#fb923c;right:28%;bottom:32px;animation-duration:2.7s;animation-delay:1.1s"></div>
+                    <div class="particle" style="width:6px;height:6px;background:#f97316;right:36%;bottom:38px;animation-duration:3.5s;animation-delay:0.2s"></div>
+                    <div class="particle" style="width:4px;height:4px;background:#fed7aa;right:14%;bottom:26px;animation-duration:3.1s;animation-delay:1.7s"></div>
 
-                    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col justify-between h-[420px]">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-timeline text-organik"></i> Grafik Tren Harian Timbulan Sampah</h4>
-                                <span class="text-xs text-gray-400">(Satuan: kg)</span>
-                            </div>
-                            <div class="relative flex-1 min-h-0">
-                                <canvas id="chartTrenHarian"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[420px]">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-trophy text-amber-500"></i> Peringkat 10 Kelas Teraktif</h4>
-                                <span class="text-xs text-gray-400">(Total Volume)</span>
-                            </div>
-                            <div class="relative flex-1 min-h-0">
-                                <canvas id="chartRankingKelas"></canvas>
-                            </div>
-                        </div>
-                    </section>
+                    <!-- Falling leaves -->
+                    <div class="leaf" style="left:43%;top:-10px;animation-duration:4.5s;animation-delay:0s">🍃</div>
+                    <div class="leaf" style="left:55%;top:-10px;animation-duration:5.2s;animation-delay:1.5s">🌿</div>
+                    <div class="leaf" style="left:38%;top:-10px;animation-duration:3.8s;animation-delay:2.8s">🍂</div>
 
-                    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 space-y-6">
-                            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[360px]">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-layer-group text-sky-500"></i> Komposisi Sampah Per Kelas</h4>
-                                </div>
-                                <div class="relative flex-1 min-h-0 overflow-y-auto max-h-[280px]">
-                                    <canvas id="chartKomposisiKelas"></canvas>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[250px]">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-building text-indigo-500"></i> Kontribusi Data Berdasarkan Tingkat (X, XI, XII)</h4>
-                                </div>
-                                <div class="relative flex-1 min-h-0">
-                                    <canvas id="chartPerbandinganTingkat"></canvas>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Ground -->
+                    <div class="ground"></div>
 
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-auto lg:h-[634px]">
-                            <div>
-                                <h4 class="font-bold text-gray-900 dark:text-white text-base mb-4 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-                                    <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i> Interpretasi Otomatis & Insight
-                                </h4>
-                                <div class="space-y-4">
-                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-organik">
-                                        <p class="text-xs text-gray-400 font-semibold uppercase">Puncak Timbulan Tertinggi</p>
-                                        <p id="insight-hari-tertinggi" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
-                                    </div>
-                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-amber-500">
-                                        <p class="text-xs text-gray-400 font-semibold uppercase">Produsen Volume Terbesar</p>
-                                        <p id="insight-kelas-terbesar" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
-                                    </div>
-                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border-l-4 border-purple-500">
-                                        <p class="text-xs text-gray-400 font-semibold uppercase">Dominasi Karakteristik</p>
-                                        <p id="insight-dominasi-rasio" class="text-sm font-bold text-gray-800 dark:text-white mt-0.5">-</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-6 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/20 dark:to-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
-                                <h5 class="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-1.5"><i class="fa-solid fa-lightbulb"></i> Rekomendasi Aksi Akademik</h5>
-                                <p id="insight-narasi" class="text-xs md:text-sm text-emerald-950 dark:text-emerald-200/90 leading-relaxed font-medium">
-                                    Mengevaluasi pola entri data operasional...
-                                </p>
-                            </div>
-                        </div>
-                    </section>
+                    <!-- Bins -->
+                    <div class="bin-organic">🗑️</div>
+                    <div class="hero-label-org">Organik</div>
+                    <div class="bin-nonorganic">🗑️</div>
+                    <div class="hero-label-non">Non-Organik</div>
+
+                    <!-- Center text -->
+                    <div class="hero-center-text">
+                        <h2>Eco-SMAN 18 Bandung</h2>
+                        <p>Pemilahan Sampah Real-time</p>
+                    </div>
+
+                    <!-- Stat overlays — updated by JS -->
+                    <div class="hero-stat-org">
+                        <div class="val" id="hero-stat-organik">—</div>
+                        <div class="lbl">Organik</div>
+                    </div>
+                    <div class="hero-stat-non">
+                        <div class="val" id="hero-stat-nonorganik">—</div>
+                        <div class="lbl">Non-Org</div>
+                    </div>
                 </div>
+                <!-- ══ END MOBILE HERO ══ -->
 
-                <div id="view-input" class="hidden animate-fadeIn space-y-6">
-                    
-                    <section class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                            <h4 class="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
-                                <i class="fa-solid fa-file-pen text-organik"></i> Input Data Manual (Per Kelas)
-                            </h4>
+                <!-- ══ DESKTOP HERO BANNER ══ -->
+                <div id="desktop-hero" class="hidden md:block relative overflow-hidden" style="height:200px;background:linear-gradient(135deg,#022c22 0%,#064e3b 40%,#065f46 70%,#14532d 100%)">
+                    <!-- Animated canvas scene -->
+                    <canvas id="hero-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+
+                    <!-- Overlay content -->
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 40px;pointer-events:none">
+                        <!-- Left stat — Organik -->
+                        <div style="background:rgba(16,185,129,0.18);border:1px solid rgba(110,231,183,0.3);backdrop-filter:blur(8px);border-radius:16px;padding:14px 22px;min-width:120px">
+                            <div id="dh-stat-organik" style="font-size:1.6rem;font-weight:800;color:#fff;line-height:1">—</div>
+                            <div style="font-size:0.65rem;font-weight:700;color:#6ee7b7;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px">🌿 Sampah Organik</div>
                         </div>
-                        <div class="p-6 sm:p-8">
-                            <form id="form-input-sampah" class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal Penimbangan <span class="text-rose-500">*</span></label>
-                                    <input type="date" id="input-tanggal" required class="w-full sm:w-1/2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-900 dark:text-white transition-all">
+
+                        <!-- Center -->
+                        <div style="text-align:center;flex:1;padding:0 24px">
+                            <div style="font-size:1.35rem;font-weight:900;color:#fff;letter-spacing:0.06em;text-transform:uppercase;text-shadow:0 2px 12px rgba(0,0,0,0.4)">ECO-SMAN 18 BANDUNG</div>
+                            <div style="font-size:0.75rem;color:#a7f3d0;font-weight:500;margin-top:6px;letter-spacing:0.04em">Sistem Pemilahan & Pemantauan Sampah Real-time</div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px">
+                                <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,185,129,0.25);border:1px solid rgba(110,231,183,0.35);border-radius:20px;padding:3px 12px;font-size:0.65rem;font-weight:700;color:#6ee7b7;letter-spacing:0.05em">
+                                    <span style="width:6px;height:6px;background:#10b981;border-radius:50%;display:inline-block;animation:ping 1s cubic-bezier(0,0,.2,1) infinite"></span>
+                                    LIVE MONITORING
+                                </span>
+                                <span id="dh-entri" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:3px 12px;font-size:0.65rem;font-weight:700;color:#d1fae5;letter-spacing:0.04em">
+                                    0 Entri Data
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Right stat — Non-Organik -->
+                        <div style="background:rgba(249,115,22,0.18);border:1px solid rgba(253,186,116,0.3);backdrop-filter:blur(8px);border-radius:16px;padding:14px 22px;min-width:120px;text-align:right">
+                            <div id="dh-stat-nonorganik" style="font-size:1.6rem;font-weight:800;color:#fff;line-height:1">—</div>
+                            <div style="font-size:0.65rem;font-weight:700;color:#fdba74;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px">♻️ Non-Organik</div>
+                        </div>
+                    </div>
+
+                    <!-- Period info bottom strip -->
+                    <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);padding:5px 40px;display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-size:0.65rem;color:rgba(167,243,208,0.8);font-weight:500">
+                            📅 Periode: <span id="dh-periode" style="color:#a7f3d0;font-weight:700">—</span>
+                        </span>
+                        <span style="font-size:0.65rem;color:rgba(167,243,208,0.8);font-weight:500">
+                            Rasio: <span id="dh-rasio" style="color:#fff;font-weight:700">O: 0% | N: 0%</span>
+                        </span>
+                    </div>
+                </div>
+                <!-- ══ END DESKTOP HERO ══ -->
+
+                <div class="p-3 md:p-6 space-y-4 md:space-y-6 max-w-[1600px] mx-auto">
+
+                    <!-- VIEW: Dashboard -->
+                    <div id="view-dashboard" class="space-y-4 md:space-y-6">
+                        <!-- Filter Bar -->
+                        <section class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                            <div class="flex flex-wrap items-end gap-3 w-full">
+                                <div class="w-full sm:w-auto min-w-[140px]">
+                                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Pilih Tingkat</label>
+                                    <select id="filter-tingkat" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-700 dark:text-white">
+                                        <option value="ALL">Semua Tingkat</option>
+                                    </select>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="w-full sm:w-auto min-w-[140px]">
+                                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Pilih Kelas</label>
+                                    <select id="filter-kelas" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-700 dark:text-white">
+                                        <option value="ALL">Semua Kelas</option>
+                                    </select>
+                                </div>
+                                <div class="w-full sm:w-auto min-w-[165px]">
+                                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Filter Tanggal</label>
+                                    <input type="date" id="filter-tanggal" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-700 dark:text-white">
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Stat Cards -->
+                        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group">
+                                <div class="flex justify-between items-start">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide leading-tight">Total Organik</p>
+                                        <h3 id="stat-organik" class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white mt-1">0 <span class="text-xs font-normal text-gray-400">kg</span></h3>
+                                    </div>
+                                    <div class="p-2 bg-organik-light dark:bg-emerald-950/60 rounded-xl text-organik group-hover:scale-110 transition-transform flex-shrink-0">
+                                        <i class="fa-solid fa-seedling text-base"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group">
+                                <div class="flex justify-between items-start">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide leading-tight">Non-Organik</p>
+                                        <h3 id="stat-nonorganik" class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white mt-1">0 <span class="text-xs font-normal text-gray-400">kg</span></h3>
+                                    </div>
+                                    <div class="p-2 bg-nonorganik-light dark:bg-orange-950/60 rounded-xl text-nonorganik group-hover:scale-110 transition-transform flex-shrink-0">
+                                        <i class="fa-solid fa-bottle-water text-base"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group">
+                                <div class="flex justify-between items-start">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide leading-tight">Total</p>
+                                        <h3 id="stat-total" class="text-lg md:text-2xl font-bold text-gray-900 dark:text-white mt-1">0 <span class="text-xs font-normal text-gray-400">kg</span></h3>
+                                    </div>
+                                    <div class="p-2 bg-blue-50 dark:bg-blue-950/60 rounded-xl text-blue-500 group-hover:scale-110 transition-transform flex-shrink-0">
+                                        <i class="fa-solid fa-scale-balanced text-base"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all group">
+                                <div class="flex justify-between items-start">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide leading-tight">Rasio</p>
+                                        <h3 id="stat-rasio" class="text-sm md:text-base font-bold text-gray-900 dark:text-white mt-1">O: 0% | N: 0%</h3>
+                                    </div>
+                                    <div class="p-2 bg-purple-50 dark:bg-purple-950/60 rounded-xl text-purple-500 group-hover:scale-110 transition-transform flex-shrink-0">
+                                        <i class="fa-solid fa-chart-pie text-base"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Charts row 1 -->
+                        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                            <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col h-[280px] md:h-[340px]">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mb-3 flex-shrink-0">
+                                    <i class="fa-solid fa-chart-area text-organik"></i> Tren Timbulan Sampah per Hari
+                                </h4>
+                                <div class="relative flex-1 min-h-0"><canvas id="chartTrenHarian"></canvas></div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-[280px] md:h-[340px]">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mb-3 flex-shrink-0">
+                                    <i class="fa-solid fa-chart-pie text-purple-500"></i> Komposisi Sampah per Kelas
+                                </h4>
+                                <div class="relative flex-1 min-h-0"><canvas id="chartKomposisiKelas"></canvas></div>
+                            </div>
+                        </section>
+
+                        <!-- Charts row 2 -->
+                        <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                            <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-[280px] md:h-[340px]">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mb-3 flex-shrink-0">
+                                    <i class="fa-solid fa-layer-group text-blue-500"></i> Volume Sampah per Tingkat
+                                </h4>
+                                <div class="relative flex-1 min-h-0"><canvas id="chartPerbandinganTingkat"></canvas></div>
+                            </div>
+                            <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-[280px] md:h-[340px]">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mb-3 flex-shrink-0">
+                                    <i class="fa-solid fa-trophy text-yellow-500"></i> Top 10 Kelas Penghasil Sampah
+                                </h4>
+                                <div class="relative flex-1 min-h-0"><canvas id="chartRankingKelas"></canvas></div>
+                            </div>
+                        </section>
+
+                        <!-- Insight -->
+                        <section class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+                            <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mb-4">
+                                <i class="fa-solid fa-lightbulb text-amber-500"></i> Insight & Analisis Otomatis
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                                <div class="bg-gray-50 dark:bg-gray-700/40 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                    <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Hari Tertinggi</p>
+                                    <p id="insight-hari-tertinggi" class="text-sm font-bold text-gray-800 dark:text-white">-</p>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-700/40 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                    <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Kelas Terbesar</p>
+                                    <p id="insight-kelas-terbesar" class="text-sm font-bold text-gray-800 dark:text-white">-</p>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-700/40 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                    <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Dominasi Rasio</p>
+                                    <p id="insight-dominasi-rasio" class="text-sm font-bold text-gray-800 dark:text-white">-</p>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-xl p-4">
+                                <p class="text-xs font-semibold text-blue-500 uppercase mb-1 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-robot"></i> Rekomendasi Otomatis
+                                </p>
+                                <p id="insight-narasi" class="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">Sedang menganalisis data...</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- VIEW: Input Data -->
+                    <div id="view-input" class="hidden animate-fadeIn space-y-4 md:space-y-6">
+                        <section class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div class="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-pen-to-square text-organik"></i> Input Data Manual
+                                </h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Isi formulir di bawah untuk menambahkan data penimbangan sampah.</p>
+                            </div>
+                            <form id="form-input-sampah" class="p-5 md:p-8 space-y-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tanggal <span class="text-rose-500">*</span></label>
+                                    <input type="date" id="input-tanggal" required class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-900 dark:text-white transition-all">
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tingkat <span class="text-rose-500">*</span></label>
                                         <select id="input-tingkat" required class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-900 dark:text-white transition-all">
                                             <option value="" disabled selected>Pilih Tingkat</option>
-                                            <option value="X">Kelas X</option>
-                                            <option value="XI">Kelas XI</option>
-                                            <option value="XII">Kelas XII</option>
+                                            <option value="X">X</option>
+                                            <option value="XI">XI</option>
+                                            <option value="XII">XII</option>
                                         </select>
                                     </div>
                                     <div>
@@ -290,186 +745,534 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-5 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Berat Organik (kg) <span class="text-rose-500">*</span></label>
                                         <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                                <i class="fa-solid fa-seedling text-organik"></i>
-                                            </div>
+                                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="fa-solid fa-seedling text-organik"></i></div>
                                             <input type="number" id="input-organik" step="0.01" min="0" required placeholder="0.00" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-900 dark:text-white transition-all shadow-sm">
                                         </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Berat Non-Organik (kg) <span class="text-rose-500">*</span></label>
                                         <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                                <i class="fa-solid fa-bottle-water text-nonorganik"></i>
-                                            </div>
+                                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none"><i class="fa-solid fa-bottle-water text-nonorganik"></i></div>
                                             <input type="number" id="input-nonorganik" step="0.01" min="0" required placeholder="0.00" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-organik text-gray-900 dark:text-white transition-all shadow-sm">
                                         </div>
                                     </div>
                                 </div>
-                                <div class="pt-4 flex flex-col sm:flex-row justify-end gap-3">
-                                    <button type="submit" id="btn-submit-manual" class="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold text-white bg-organik hover:bg-emerald-600 rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-organik flex items-center justify-center gap-2">
+                                <div class="pt-2 flex justify-end">
+                                    <button type="submit" id="btn-submit-manual" class="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold text-white bg-organik hover:bg-emerald-600 rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-organik flex items-center justify-center gap-2 active:scale-95">
                                         <i class="fa-solid fa-cloud-arrow-up"></i> Simpan
                                     </button>
                                 </div>
                             </form>
-                        </div>
-                    </section>
+                        </section>
 
-                    <section class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 flex justify-between items-center flex-wrap gap-4">
-                            <div>
-                                <h4 class="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
-                                    <i class="fa-solid fa-file-csv text-blue-500"></i> Upload Massal via CSV
-                                </h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Rekap data seluruh kelas sekaligus dengan mengunggah file CSV.</p>
+                        <section class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div class="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 flex justify-between items-center flex-wrap gap-4">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
+                                        <i class="fa-solid fa-file-csv text-blue-500"></i> Upload Massal via CSV
+                                    </h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Rekap data seluruh kelas sekaligus.</p>
+                                </div>
+                                <button type="button" id="btn-download-template" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border border-blue-100 dark:border-blue-800 active:scale-95">
+                                    <i class="fa-solid fa-download"></i> Unduh Template
+                                </button>
                             </div>
-                            <button type="button" id="btn-download-template" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 shadow-sm border border-blue-100 dark:border-blue-800">
-                                <i class="fa-solid fa-download"></i> Unduh Template
-                            </button>
-                        </div>
-                        <div class="p-6 sm:p-8">
-                            <form id="form-upload-csv" class="space-y-4">
-                                <div class="flex items-center justify-center w-full">
-                                    <label for="input-csv" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 transition-all">
-                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-3"></i>
-                                            <p class="mb-1 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold text-blue-500">Klik untuk upload</span> file Anda</p>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">Gunakan file bereksistensi .CSV (Max 5MB)</p>
-                                        </div>
+                            <div class="p-5 md:p-8">
+                                <form id="form-upload-csv" class="space-y-4">
+                                    <label for="input-csv" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 transition-all">
+                                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm text-gray-500"><span class="font-semibold text-blue-500">Klik untuk upload</span> file CSV</p>
                                         <input id="input-csv" type="file" accept=".csv" class="hidden" required />
                                     </label>
-                                </div>
-                                <div id="csv-file-name" class="text-sm font-medium text-center text-emerald-600 dark:text-emerald-400 hidden bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-lg border border-emerald-100 dark:border-emerald-800/50"></div>
-                                
-                                <div class="pt-2 flex justify-end">
-                                    <button type="submit" id="btn-submit-csv" class="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-file-import"></i> Proses Data
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </section>
+                                    <div id="csv-file-name" class="text-sm font-medium text-center text-emerald-600 dark:text-emerald-400 hidden bg-emerald-50 dark:bg-emerald-900/30 p-2 rounded-lg border border-emerald-100 dark:border-emerald-800/50"></div>
+                                    <div class="flex justify-end">
+                                        <button type="submit" id="btn-submit-csv" class="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95">
+                                            <i class="fa-solid fa-file-import"></i> Proses Data
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
 
-                </div> <div id="view-data-sampah" class="hidden animate-fadeIn">
-                    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div>
+                    <!-- VIEW: Data Sampah -->
+                    <div id="view-data-sampah" class="hidden animate-fadeIn">
+                        <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div class="p-4 border-b border-gray-100 dark:border-gray-700">
                                 <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
                                     <i class="fa-solid fa-table-list text-organik"></i> Log Rekam Data Sampah Terklasifikasi
                                 </h4>
-                                <p class="text-xs text-gray-400 mt-0.5">Menampilkan log historis penimbangan sampah. <span class="text-organik font-medium">Klik pada judul tabel untuk mengurutkan data.</span></p>
+                                <p class="text-xs text-gray-400 mt-0.5">Klik judul kolom untuk mengurutkan data.</p>
                             </div>
-                        </div>
-                        <div class="overflow-x-auto w-full">
-                            <table class="w-full text-left border-collapse whitespace-nowrap select-none">
-                                <thead>
-                                    <tr class="bg-gray-50/70 dark:bg-gray-700/40 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
-                                        <th class="p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" data-sort="tanggal">
-                                            <div class="flex items-center gap-2">Tanggal <i class="fa-solid fa-sort text-gray-300 group-hover:text-gray-500 sort-icon"></i></div>
-                                        </th>
-                                        <th class="p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" data-sort="kelas">
-                                            <div class="flex items-center gap-2">Kelas <i class="fa-solid fa-sort text-gray-300 group-hover:text-gray-500 sort-icon"></i></div>
-                                        </th>
-                                        <th class="p-4 text-emerald-600 dark:text-emerald-400 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors group" data-sort="organik">
-                                            <div class="flex items-center gap-2">Organik (kg) <i class="fa-solid fa-sort text-emerald-200 group-hover:text-emerald-400 sort-icon"></i></div>
-                                        </th>
-                                        <th class="p-4 text-orange-600 dark:text-orange-400 cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors group" data-sort="nonOrganik">
-                                            <div class="flex items-center gap-2">Non-Organik (kg) <i class="fa-solid fa-sort text-orange-200 group-hover:text-orange-400 sort-icon"></i></div>
-                                        </th>
-                                        <th class="p-4 bg-gray-100/50 dark:bg-gray-700/20 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-colors group" data-sort="total">
-                                            <div class="flex items-center gap-2">Total Volume (kg) <i class="fa-solid fa-sort text-gray-300 group-hover:text-gray-500 sort-icon"></i></div>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-body-sampah" class="text-sm divide-y divide-gray-100 dark:divide-gray-700/50">
-                                    <tr>
-                                        <td colspan="5" class="p-8 text-center text-gray-400 dark:text-gray-500 font-medium">
-                                            <i class="fa-solid fa-circle-notch animate-spin text-xl text-organik mr-2"></i> Sinkronisasi repositori database...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+                            <div class="overflow-x-auto w-full">
+                                <table class="w-full text-left border-collapse whitespace-nowrap select-none">
+                                    <thead>
+                                        <tr class="bg-gray-50/70 dark:bg-gray-700/40 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                            <th class="p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" data-sort="tanggal"><div class="flex items-center gap-2">Tanggal <i class="fa-solid fa-sort text-gray-300 group-hover:text-gray-500"></i></div></th>
+                                            <th class="p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group" data-sort="kelas"><div class="flex items-center gap-2">Kelas <i class="fa-solid fa-sort text-gray-300 group-hover:text-gray-500"></i></div></th>
+                                            <th class="p-4 text-emerald-600 dark:text-emerald-400 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/30" data-sort="organik"><div class="flex items-center gap-2">Organik (kg) <i class="fa-solid fa-sort text-emerald-200"></i></div></th>
+                                            <th class="p-4 text-orange-600 dark:text-orange-400 cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-900/30" data-sort="nonOrganik"><div class="flex items-center gap-2">Non-Organik (kg) <i class="fa-solid fa-sort text-orange-200"></i></div></th>
+                                            <th class="p-4 bg-gray-100/50 dark:bg-gray-700/20 cursor-pointer" data-sort="total"><div class="flex items-center gap-2">Total (kg) <i class="fa-solid fa-sort text-gray-300"></i></div></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body-sampah" class="text-sm divide-y divide-gray-100 dark:divide-gray-700/50">
+                                        <tr><td colspan="5" class="p-8 text-center text-gray-400"><i class="fa-solid fa-circle-notch animate-spin text-xl text-organik mr-2"></i> Sinkronisasi database...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
 
-                <div id="view-statistik" class="hidden animate-fadeIn space-y-6">
-                    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col justify-between h-[400px]">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
-                                    <i class="fa-solid fa-chart-column text-organik"></i> Analisis Komparatif Akumulasi Sampah Per Tingkat
-                                </h4>
-                                <span class="text-xs text-gray-400">(Satuan: kg)</span>
+                    <!-- VIEW: Statistik -->
+                    <div id="view-statistik" class="hidden animate-fadeIn space-y-4 md:space-y-6">
+                        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                            <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 lg:col-span-2 flex flex-col h-[320px] md:h-[380px]">
+                                <div class="flex items-center justify-between mb-2 flex-shrink-0">
+                                    <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2"><i class="fa-solid fa-chart-column text-organik"></i> Analisis Komparatif Per Tingkat</h4>
+                                    <span class="text-xs text-gray-400">(kg)</span>
+                                </div>
+                                <div class="relative flex-1 min-h-0"><canvas id="chartStatistikKomparatif"></canvas></div>
                             </div>
-                            <div class="relative flex-1 min-h-0">
-                                <canvas id="chartStatistikKomparatif"></canvas>
+                            <div class="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-[320px] md:h-[380px]">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mb-2 flex-shrink-0"><i class="fa-solid fa-clipboard-check text-blue-500"></i> Validitas Logsheet</h4>
+                                <div class="relative flex-1 min-h-0"><canvas id="chartStatistikStatus"></canvas></div>
                             </div>
-                        </div>
+                        </section>
 
-                        <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between h-[400px]">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
-                                    <i class="fa-solid fa-clipboard-check text-blue-500"></i> Validitas & Status Logsheet Masuk
-                                </h4>
+                        <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                            <div class="p-4 border-b border-gray-100 dark:border-gray-700">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2"><i class="fa-solid fa-calculator text-purple-500"></i> Matriks Efisiensi Pengurangan Sampah</h4>
+                                <p class="text-xs text-gray-400 mt-0.5">Penilaian performa reduksi sampah rata-rata per tingkat</p>
                             </div>
-                            <div class="relative flex-1 min-h-0">
-                                <canvas id="chartStatistikStatus"></canvas>
+                            <div class="overflow-x-auto w-full">
+                                <table class="w-full text-left border-collapse whitespace-nowrap">
+                                    <thead>
+                                        <tr class="bg-gray-50/70 dark:bg-gray-700/40 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-gray-700">
+                                            <th class="p-4">Klaster Tingkat</th>
+                                            <th class="p-4">Frekuensi (Entri)</th>
+                                            <th class="p-4 text-emerald-600">Rerata Organik (kg)</th>
+                                            <th class="p-4 text-orange-600">Rerata Non-Organik (kg)</th>
+                                            <th class="p-4 bg-gray-100/50 dark:bg-gray-700/20">Predikat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body-matriks" class="text-sm divide-y divide-gray-100 dark:divide-gray-700/50"></tbody>
+                                </table>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    </div>
 
-                    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div class="p-5 border-b border-gray-100 dark:border-gray-700">
-                            <h4 class="font-bold text-gray-900 dark:text-white text-base flex items-center gap-2">
-                                <i class="fa-solid fa-calculator text-purple-500"></i> Matriks Efisiensi Pengurangan Sampah Akademik
-                            </h4>
-                            <p class="text-xs text-gray-400 mt-0.5">Penilaian performa reduksi sampah rata-rata per tingkat berdasarkan data historis yang divalidasi</p>
-                        </div>
-                        <div class="overflow-x-auto w-full">
-                            <table class="w-full text-left border-collapse whitespace-nowrap">
-                                <thead>
-                                    <tr class="bg-gray-50/70 dark:bg-gray-700/40 text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-gray-700">
-                                        <th class="p-4">Klaster Tingkat</th>
-                                        <th class="p-4">Frekuensi Kontribusi (Entri)</th>
-                                        <th class="p-4 text-emerald-600">Rerata Organik (kg)</th>
-                                        <th class="p-4 text-orange-600">Rerata Non-Organik (kg)</th>
-                                        <th class="p-4 bg-gray-100/50 dark:bg-gray-700/20">Predikat Performa Lingkungan</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-body-matriks" class="text-sm divide-y divide-gray-100 dark:divide-gray-700/50">
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+                </div><!-- /inner padding -->
+            </div><!-- /#page-content -->
 
+            <!-- ═══════════════ MOBILE BOTTOM NAV ═══════════════ -->
+            <nav id="mobile-bottom-nav" class="fixed bottom-0 left-0 right-0 z-40 bg-white/85 dark:bg-gray-800/85 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-700/80 px-2 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom,0px))] justify-around items-center shadow-[0_-1px_0_rgba(0,0,0,0.05)]">
+                <button class="mobile-nav-btn nav-dashboard active text-organik">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="mobile-nav-btn nav-input text-gray-400 dark:text-gray-500">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Input</span>
+                </button>
+                <button class="mobile-nav-btn nav-data-sampah text-gray-400 dark:text-gray-500">
+                    <i class="fa-solid fa-dumpster"></i>
+                    <span>Data</span>
+                </button>
+                <button class="mobile-nav-btn nav-statistik text-gray-400 dark:text-gray-500">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Statistik</span>
+                </button>
+                <button class="mobile-nav-btn nav-profile text-gray-400 dark:text-gray-500" id="btn-mobile-profile">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span>Profil</span>
+                </button>
+            </nav>
+
+        </div><!-- /#main-content -->
+    </div><!-- /#app-shell -->
+
+    <!-- ═══════════════ MOBILE PROFILE SHEET ═══════════════ -->
+    <div id="profile-sheet" class="fixed inset-0 z-[60] pointer-events-none">
+        <div id="profile-sheet-backdrop" class="absolute inset-0 bg-gray-900/40 opacity-0 transition-opacity duration-300"></div>
+        <div id="profile-sheet-panel" class="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-3xl shadow-2xl translate-y-full transition-transform duration-300 ease-out">
+            <div class="flex justify-center pt-3 pb-1">
+                <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
             </div>
-        </main>
+            <div class="px-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] pt-2 space-y-3">
+                <div class="flex items-center gap-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                    <div id="sheet-user-avatar" class="w-12 h-12 rounded-2xl bg-organik text-white text-base font-bold flex items-center justify-center shadow">--</div>
+                    <div>
+                        <p id="sheet-user-nama" class="font-bold text-gray-900 dark:text-white">Memuat...</p>
+                        <p id="sheet-user-role" class="text-xs text-gray-400">-</p>
+                    </div>
+                </div>
+                <button id="sheet-dark-mode" class="flex items-center justify-between w-full px-4 py-3.5 bg-gray-100 dark:bg-gray-700 rounded-2xl text-sm font-medium transition-colors active:scale-[0.98]">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-moon w-4 text-center"></i> Mode Gelap</span>
+                    <div class="w-10 h-5 bg-gray-300 dark:bg-organik rounded-full relative transition-colors">
+                        <div class="w-4 h-4 bg-white rounded-full absolute top-0.5 left-0.5 dark:left-5 transition-all shadow-sm"></div>
+                    </div>
+                </button>
+                <button id="sheet-logout" class="flex items-center gap-3 w-full px-4 py-3.5 text-sm font-semibold text-red-500 bg-red-50 dark:bg-red-950/30 rounded-2xl transition-all active:scale-[0.98]">
+                    <i class="fa-solid fa-right-from-bracket w-4 text-center"></i> Keluar
+                </button>
+                <button id="btn-login-sheet"
+                    class="flex items-center gap-3 w-full px-4 py-3.5 text-sm font-semibold
+                           text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30
+                           rounded-2xl transition-all active:scale-[0.98]">
+                    <i class="fa-solid fa-right-to-bracket w-4 text-center"></i>
+                    Masuk / Login
+                </button>
+                <button id="sheet-close" class="w-full px-4 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-2xl active:scale-[0.98] transition-all">
+                    Batal
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-2 py-2.5 flex justify-around items-center md:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
-        <button class="mobile-nav-btn nav-dashboard flex flex-col items-center gap-1 text-xs font-semibold text-organik transition-all">
-            <i class="fa-solid fa-chart-pie text-lg"></i>
-            <span>Dashboard</span>
-        </button>
-        <button class="mobile-nav-btn nav-input flex flex-col items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 transition-all">
-            <i class="fa-solid fa-pen-to-square text-lg"></i>
-            <span>Input</span>
-        </button>
-        <button class="mobile-nav-btn nav-data-sampah flex flex-col items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 transition-all">
-            <i class="fa-solid fa-dumpster text-lg"></i>
-            <span>Data</span>
-        </button>
-        <button class="mobile-nav-btn nav-statistik flex flex-col items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 transition-all">
-            <i class="fa-solid fa-chart-line text-lg"></i>
-            <span>Statistik</span>
-        </button>
-    </div>
+    <script>
+    // =========================================================================
+    // DESKTOP HERO CANVAS ANIMATION
+    // =========================================================================
+    (function() {
+        const canvas = document.getElementById('hero-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width  = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const W = () => canvas.width;
+        const H = () => canvas.height;
+
+        // ── Particles ──────────────────────────────────────────────────────
+        const particles = [];
+        for (let i = 0; i < 28; i++) {
+            particles.push({
+                x: Math.random() * 1,      // fraction of W
+                y: Math.random() * 1,      // fraction of H
+                r: 2 + Math.random() * 5,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: -0.4 - Math.random() * 0.6,
+                alpha: 0.4 + Math.random() * 0.5,
+                color: Math.random() > 0.5
+                    ? `rgba(110,231,183,`
+                    : `rgba(253,186,116,`,
+                spin: (Math.random() - 0.5) * 0.04,
+                rot: Math.random() * Math.PI * 2,
+            });
+        }
+
+        // ── Stars / glints ─────────────────────────────────────────────────
+        const stars = [];
+        for (let i = 0; i < 18; i++) {
+            stars.push({
+                x: Math.random(),
+                y: Math.random() * 0.6,
+                r: 0.8 + Math.random() * 1.5,
+                phase: Math.random() * Math.PI * 2,
+                speed: 0.5 + Math.random() * 1.5,
+            });
+        }
+
+        // ── Bins ───────────────────────────────────────────────────────────
+        const bins = [
+            { xf: 0.22, label: 'ORGANIK',     color: '#10b981', accent: '#6ee7b7', icon: '🌿', bounce: 0, bouncePhase: 0,    bounceAmp: 5 },
+            { xf: 0.40, label: 'CAMPURAN',    color: '#3b82f6', accent: '#93c5fd', icon: '♻️',  bounce: 0, bouncePhase: 1.2, bounceAmp: 4 },
+            { xf: 0.60, label: 'NON-ORGANIK', color: '#f97316', accent: '#fdba74', icon: '🧴', bounce: 0, bouncePhase: 0.6, bounceAmp: 6 },
+            { xf: 0.78, label: 'B3',          color: '#ef4444', accent: '#fca5a5', icon: '⚠️',  bounce: 0, bouncePhase: 2.1, bounceAmp: 4 },
+        ];
+
+        // ── Falling items ───────────────────────────────────────────────────
+        const fallers = [];
+        const fallerIcons = ['🍃','🌿','🍂','🥤','📦','🧃','🍌','🥕'];
+        for (let i = 0; i < 10; i++) {
+            fallers.push({
+                x: Math.random(),
+                y: -0.1 - Math.random() * 0.5,
+                vy: 0.0008 + Math.random() * 0.001,
+                vx: (Math.random() - 0.5) * 0.0003,
+                rot: Math.random() * Math.PI * 2,
+                spin: (Math.random() - 0.5) * 0.04,
+                icon: fallerIcons[Math.floor(Math.random() * fallerIcons.length)],
+                size: 14 + Math.random() * 10,
+                alpha: 0.7 + Math.random() * 0.3,
+            });
+        }
+
+        // ── Conveyor belt ───────────────────────────────────────────────────
+        let conveyorOffset = 0;
+
+        // ── Ground hills ────────────────────────────────────────────────────
+        function drawGround(t) {
+            const groundY = H() * 0.72;
+            // Back hill
+            ctx.beginPath();
+            ctx.moveTo(0, H());
+            ctx.lineTo(0, groundY + 18);
+            for (let x = 0; x <= W(); x += 4) {
+                const y = groundY + 18 + Math.sin(x * 0.008 + t * 0.2) * 6;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(W(), H());
+            ctx.closePath();
+            ctx.fillStyle = '#0f3d20';
+            ctx.fill();
+
+            // Front ground
+            ctx.beginPath();
+            ctx.moveTo(0, H());
+            ctx.lineTo(0, groundY);
+            for (let x = 0; x <= W(); x += 4) {
+                const y = groundY + Math.sin(x * 0.012 + t * 0.3 + 1) * 4;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(W(), H());
+            ctx.closePath();
+            ctx.fillStyle = '#14532d';
+            ctx.fill();
+        }
+
+        // ── Trees ───────────────────────────────────────────────────────────
+        const treePositions = [0.05, 0.13, 0.86, 0.94];
+        function drawTree(xf, t, i) {
+            const x = xf * W();
+            const gY = H() * 0.72;
+            const sway = Math.sin(t * 0.8 + i * 1.3) * 3;
+            const h = 52 + i * 8;
+
+            // Trunk
+            ctx.save();
+            ctx.translate(x, gY);
+            ctx.beginPath();
+            ctx.roundRect(-4, -h * 0.35, 8, h * 0.35, 3);
+            ctx.fillStyle = '#7c3f00';
+            ctx.fill();
+
+            // Foliage layers
+            ctx.translate(sway, 0);
+            [0, 14, 26].forEach((offset, li) => {
+                const r = 22 - li * 4;
+                const yOff = -h * 0.35 - offset;
+                ctx.beginPath();
+                ctx.ellipse(0, yOff, r, r * 1.2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = li === 0 ? '#16a34a' : li === 1 ? '#15803d' : '#14532d';
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        // ── Conveyor belt ───────────────────────────────────────────────────
+        function drawConveyor(t) {
+            const gY = H() * 0.72;
+            const beltY = gY - 12;
+            const beltH = 10;
+
+            // Belt body
+            const grad = ctx.createLinearGradient(0, beltY, 0, beltY + beltH);
+            grad.addColorStop(0, '#374151');
+            grad.addColorStop(1, '#1f2937');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(0, beltY, W(), beltH, 3);
+            ctx.fill();
+
+            // Moving stripes
+            conveyorOffset = (conveyorOffset + 1.2) % 24;
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, beltY, W(), beltH);
+            ctx.clip();
+            for (let x = -24 + conveyorOffset; x < W() + 24; x += 24) {
+                ctx.beginPath();
+                ctx.moveTo(x, beltY);
+                ctx.lineTo(x + 8, beltY);
+                ctx.lineTo(x + 8, beltY + beltH);
+                ctx.lineTo(x, beltY + beltH);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(255,255,255,0.07)';
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // Tombol Login Sidebar
+        document.getElementById('btn-login-sidebar')?.addEventListener('click', () => {
+            if (typeof LoginModal !== 'undefined') LoginModal.show('Masuk untuk mengakses fitur admin');
+            else window.location.href = 'login.html';
+        });
+// Tombol Login Sheet (mobile profile)
+        document.getElementById('btn-login-sheet')?.addEventListener('click', () => {
+            closeProfileSheet();
+            if (typeof LoginModal !== 'undefined') LoginModal.show('Masuk untuk mengakses fitur admin');
+            else window.location.href = 'login.html';
+        });
+        // ── Draw a bin ──────────────────────────────────────────────────────
+        function drawBin(bin, t) {
+            const gY = H() * 0.72 - 12;
+            const x  = bin.xf * W();
+            const bw = 38, bh = 48;
+            const bounce = Math.sin(t * 1.8 + bin.bouncePhase) * bin.bounceAmp;
+            const by = gY - bh + bounce;
+
+            ctx.save();
+            ctx.translate(x, by);
+
+            // Shadow
+            ctx.beginPath();
+            ctx.ellipse(0, bh + 4, bw * 0.4, 5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.fill();
+
+            // Body gradient
+            const bg = ctx.createLinearGradient(-bw/2, 0, bw/2, 0);
+            bg.addColorStop(0, bin.accent + '55');
+            bg.addColorStop(0.4, bin.color);
+            bg.addColorStop(1, bin.color + 'bb');
+            ctx.beginPath();
+            ctx.roundRect(-bw/2, 6, bw, bh - 6, [0, 0, 6, 6]);
+            ctx.fillStyle = bg;
+            ctx.fill();
+            ctx.strokeStyle = bin.accent + '80';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Lid
+            ctx.beginPath();
+            ctx.roundRect(-bw/2 - 2, 2, bw + 4, 10, 4);
+            ctx.fillStyle = bin.color;
+            ctx.fill();
+            ctx.strokeStyle = bin.accent + '99';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Handle
+            ctx.beginPath();
+            ctx.roundRect(-8, -2, 16, 6, 3);
+            ctx.fillStyle = bin.accent;
+            ctx.fill();
+
+            // Icon
+            ctx.font = '15px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(bin.icon, 0, bh * 0.5);
+
+            // Label
+            ctx.font = 'bold 7px Inter, sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.fillText(bin.label, 0, bh + 14);
+
+            ctx.restore();
+        }
+
+        // ── Particles ──────────────────────────────────────────────────────
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.translate(p.x * W(), p.y * H());
+                ctx.rotate(p.rot);
+                ctx.beginPath();
+                ctx.roundRect(-p.r, -p.r, p.r * 2, p.r * 2, p.r * 0.4);
+                ctx.fillStyle = p.color + p.alpha + ')';
+                ctx.fill();
+                ctx.restore();
+
+                p.x += p.vx / W() * 60;
+                p.y += p.vy / H() * 60;
+                p.rot += p.spin;
+                p.alpha -= 0.003;
+                if (p.y < -0.05 || p.alpha <= 0) {
+                    p.y = 0.9 + Math.random() * 0.15;
+                    p.x = Math.random();
+                    p.alpha = 0.4 + Math.random() * 0.5;
+                }
+            });
+        }
+
+        // ── Stars ───────────────────────────────────────────────────────────
+        function drawStars(t) {
+            stars.forEach(s => {
+                const pulse = 0.4 + 0.6 * Math.abs(Math.sin(t * s.speed + s.phase));
+                ctx.beginPath();
+                ctx.arc(s.x * W(), s.y * H(), s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${pulse * 0.6})`;
+                ctx.fill();
+            });
+        }
+
+        // ── Fallers ─────────────────────────────────────────────────────────
+        function drawFallers() {
+            fallers.forEach(f => {
+                ctx.save();
+                ctx.globalAlpha = f.alpha;
+                ctx.translate(f.x * W(), f.y * H());
+                ctx.rotate(f.rot);
+                ctx.font = f.size + 'px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(f.icon, 0, 0);
+                ctx.restore();
+
+                f.x += f.vx;
+                f.y += f.vy;
+                f.rot += f.spin;
+                if (f.y > 0.75) {
+                    f.y = -0.08 - Math.random() * 0.2;
+                    f.x = Math.random();
+                    f.icon = fallerIcons[Math.floor(Math.random() * fallerIcons.length)];
+                }
+            });
+        }
+
+        // ── Floating orbs ───────────────────────────────────────────────────
+        const orbs = [
+            { xf: 0.5, yf: 0.5, r: 60, color: 'rgba(16,185,129,', phase: 0 },
+            { xf: 0.3, yf: 0.3, r: 40, color: 'rgba(249,115,22,',  phase: 2 },
+            { xf: 0.7, yf: 0.4, r: 45, color: 'rgba(16,185,129,',  phase: 4 },
+        ];
+        function drawOrbs(t) {
+            orbs.forEach(o => {
+                const px = o.xf * W() + Math.sin(t * 0.4 + o.phase) * 20;
+                const py = o.yf * H() + Math.cos(t * 0.3 + o.phase) * 12;
+                const grad = ctx.createRadialGradient(px, py, 0, px, py, o.r);
+                grad.addColorStop(0, o.color + '0.08)');
+                grad.addColorStop(1, o.color + '0)');
+                ctx.beginPath();
+                ctx.arc(px, py, o.r, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            });
+        }
+
+        // ── Main loop ───────────────────────────────────────────────────────
+        let t = 0;
+        function loop() {
+            t += 0.016;
+            ctx.clearRect(0, 0, W(), H());
+
+            drawOrbs(t);
+            drawStars(t);
+            drawGround(t);
+            treePositions.forEach((xf, i) => drawTree(xf, t, i));
+            drawConveyor(t);
+            bins.forEach(b => drawBin(b, t));
+            drawParticles();
+            drawFallers();
+
+            requestAnimationFrame(loop);
+        }
+        loop();
+    })();
+    </script>
 
     <script src="js/auth.js"></script>
     <script src="js/spreadsheet.js"></script>

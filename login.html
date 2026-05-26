@@ -136,9 +136,9 @@
 
     <script>
         // =========================================================================
-        // CONFIG — URL Apps Script yang sudah di-deploy
+        // CONFIG — Hanya Apps Script URL, Spreadsheet ID tidak disimpan di sini
         // =========================================================================
-        const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_AeRTOVp0z3l_nu8fVS6NDAQOC86C235PxIJk8LoKInRlx89nIha-lpm1yET6ivDa/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw8_qdCUnO85U1LSMJXSJv7RxMt83FQEnWGVYCtjJRgOaYgr3yi5ONcSEcz4aypd3dM/exec';
 
         // =========================================================================
         // STORAGE HELPER — localStorage → sessionStorage → Cookie (3 lapis fallback)
@@ -228,30 +228,26 @@
             }
         });
 
-        // =========================================================================
-        // AKUN DEMO — Dipakai saat API gagal/tidak tersedia
-        // Pastikan sama persis dengan data di sheet Users!
-        // =========================================================================
-        const DEMO_USERS = [
-            { username: 'admin',  password: 'admin123',  nama: 'Administrator',    role: 'Admin'  },
-            { username: 'admin',  password: 'admin',     nama: 'Administrator',    role: 'Admin'  },
-            { username: 'guru',   password: 'guru2026',  nama: 'Guru Pembimbing',  role: 'Editor' },
-            { username: 'siswa',  password: 'siswa2026', nama: 'Petugas Kelas',    role: 'Viewer' }
+        // Fallback lokal — hanya aktif jika Apps Script benar-benar tidak bisa dihubungi
+        const LOCAL_USERS = [
+            { Username:'admin',  Password:'admin123',  Nama:'Administrator',   Role:'Admin',  Status:'Aktif' },
+            { Username:'guru',   Password:'guru2026',  Nama:'Guru Pembimbing', Role:'Editor', Status:'Aktif' },
+            { Username:'siswa',  Password:'siswa2026', Nama:'Petugas Kelas',   Role:'Viewer', Status:'Aktif' }
         ];
 
         // =========================================================================
-        // LOGIN HANDLER
+        // LOGIN HANDLER — Validasi via Apps Script (tidak ada ID spreadsheet di sini)
         // =========================================================================
         async function doLogin() {
-            const username = document.getElementById('input-username').value.trim();
-            const password = document.getElementById('input-password').value;
-            const btn = document.getElementById('btn-login');
-            const btnText = document.getElementById('btn-login-text');
-            const btnIcon = document.getElementById('btn-login-icon');
-            const alertError = document.getElementById('alert-error');
+            const username = document.getElementById('input-username').value.trim().toLowerCase();
+            const password = document.getElementById('input-password').value.trim();
+            const btn            = document.getElementById('btn-login');
+            const btnText        = document.getElementById('btn-login-text');
+            const btnIcon        = document.getElementById('btn-login-icon');
+            const alertError     = document.getElementById('alert-error');
             const alertErrorText = document.getElementById('alert-error-text');
-            const alertSuccess = document.getElementById('alert-success');
-            const card = document.getElementById('login-card');
+            const alertSuccess   = document.getElementById('alert-success');
+            const card           = document.getElementById('login-card');
 
             if (!username || !password) {
                 alertErrorText.textContent = 'Username dan password tidak boleh kosong.';
@@ -261,32 +257,22 @@
                 return;
             }
 
-            // State loading
             alertError.classList.add('hidden');
             alertSuccess.classList.add('hidden');
             btn.disabled = true;
             btnText.textContent = 'Memverifikasi...';
             btnIcon.className = 'fa-solid fa-circle-notch animate-spin';
 
-            function loginSuccess(userData, isDemo) {
-                const sessionData = {
-                    username: userData.username,
-                    nama: userData.nama || userData.username,
-                    role: userData.role || 'Viewer',
-                    loginTime: Date.now()
-                };
-                Storage.set('eco_session', sessionData);
-
+            function onSuccess(nama, role) {
+                Storage.set('eco_session', { username, nama, role, loginTime: Date.now() });
                 alertSuccess.classList.remove('hidden');
-                btnText.textContent = isDemo ? 'Berhasil! (Mode Demo)' : 'Berhasil!';
+                btnText.textContent = 'Berhasil!';
                 btnIcon.className = 'fa-solid fa-check';
-                btn.classList.remove('bg-organik');
-                btn.classList.add('bg-emerald-600');
-
+                btn.classList.replace('bg-organik', 'bg-emerald-600');
                 setTimeout(() => { window.location.href = 'index.html'; }, 900);
             }
 
-            function loginFailed(msg) {
+            function onFail(msg) {
                 alertErrorText.textContent = msg || 'Username atau password salah.';
                 alertError.classList.remove('hidden');
                 card.classList.add('shake');
@@ -296,75 +282,46 @@
                 btnIcon.className = 'fa-solid fa-right-to-bracket';
             }
 
-            // --- Jika URL kosong, langsung pakai Mode Demo ---
-            if (!AUTH_SCRIPT_URL) {
-                const found = DEMO_USERS.find(u => u.username === username && u.password === password);
-                if (found) loginSuccess(found, true);
-                else loginFailed('Username atau password salah.');
-                return;
-            }
-
-            // --- Jika URL diisi, coba fetch ke Apps Script ---
-            let apiOk = false;
+            // --- Coba validasi ke Apps Script ---
             try {
-                const payload = new URLSearchParams({
-                    action: 'login',
-                    username: username,
-                    password: password,
-                    loginTime: new Date().toISOString(),
-                    userAgent: navigator.userAgent.substring(0, 100)
-                });
-
-                const response = await fetch(AUTH_SCRIPT_URL, {
+                const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: payload,
+                    body: new URLSearchParams({
+                        action: 'login', username, password,
+                        loginTime: new Date().toISOString(),
+                        userAgent: navigator.userAgent.substring(0, 80)
+                    }),
                     redirect: 'follow'
                 });
 
-                // Ambil teks dulu, jangan langsung .json() karena bisa berupa HTML redirect
-                const rawText = await response.text();
-                console.log('API raw response:', rawText.substring(0, 200));
-
-                // Coba parse sebagai JSON
+                const raw = await res.text();
                 let result = null;
-                try {
-                    // Kadang Apps Script membungkus response dengan karakter aneh, bersihkan dulu
-                    const cleanText = rawText.trim().replace(/^\)\]\}'/, '');
-                    result = JSON.parse(cleanText);
-                } catch(parseErr) {
-                    // Response bukan JSON (HTML redirect / error page) → pakai Mode Demo
-                    console.warn('Response bukan JSON, beralih ke Mode Demo.');
-                    result = null;
-                }
+                try { result = JSON.parse(raw.trim().replace(/^\)\]\}'/, '')); } catch(_) {}
 
                 if (result && typeof result.success !== 'undefined') {
-                    apiOk = true;
-                    if (result.success) loginSuccess(result, false);
-                    else loginFailed(result.message || 'Username atau password salah.');
+                    if (result.success) onSuccess(result.nama, result.role);
+                    else onFail(result.message);
+                    return; // selesai, jangan lanjut ke fallback
                 }
-
-            } catch (err) {
-                console.warn('Fetch gagal:', err.message);
+                // Kalau Apps Script belum di-deploy (response bukan JSON) → fallback
+                console.warn('Apps Script belum di-deploy dengan Code.gs baru, pakai fallback lokal.');
+            } catch(e) {
+                console.warn('Koneksi ke Apps Script gagal:', e.message);
             }
 
-            // Fallback ke Mode Demo jika API tidak memberikan response JSON valid
-            if (!apiOk) {
-                console.info('Menggunakan Mode Demo sebagai fallback.');
-                const found = DEMO_USERS.find(u => u.username === username && u.password === password);
-                if (found) loginSuccess(found, true);
-                else loginFailed('Username atau password salah.');
-            }
+            // --- Fallback lokal (hanya jika Apps Script gagal total) ---
+            const found = LOCAL_USERS.find(u =>
+                u.Username.toLowerCase() === username && u.Password === password && u.Status === 'Aktif'
+            );
+            if (found) onSuccess(found.Nama, found.Role);
+            else onFail('Username atau password salah.');
         }
 
         document.getElementById('btn-login').addEventListener('click', doLogin);
-
-        // Enter key support
         ['input-username', 'input-password'].forEach(id => {
-            document.getElementById(id).addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') doLogin();
-            });
+            document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
         });
     </script>
 </body>
-</html>
+</html> 

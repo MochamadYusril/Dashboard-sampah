@@ -1,61 +1,72 @@
-// Filter Interaction Controls Management
-const DashboardFilters = {
-    Initialize(data, onFilterChangeCallback) {
-        const tingkatSelect = document.getElementById('filter-tingkat');
-        const kelasSelect = document.getElementById('filter-kelas');
-        const tanggalInput = document.getElementById('filter-tanggal');
+// =========================================================================
+// FILTERS.JS — Dashboard Filter Engine
+// Eco-SMAN 18 Bandung Dashboard
+// =========================================================================
+const DashboardFilters = (() => {
+    let _allData     = [];
+    let _onFilter    = null;
 
-        // Extract Unique Tingkat
-        const tingkats = [...new Set(data.map(d => d.tingkat).filter(Boolean))].sort();
+    function _applyFilters() {
+        const tingkat = document.getElementById('filter-tingkat')?.value || 'ALL';
+        const kelas   = document.getElementById('filter-kelas')?.value   || 'ALL';
+        const tanggal = document.getElementById('filter-tanggal')?.value || '';
 
-        // Populate Dropdown Tingkat
-        tingkatSelect.innerHTML = '<option value="ALL">Semua Tingkat</option>';
-        tingkats.forEach(t => {
-            tingkatSelect.innerHTML += `<option value="${t}">Tingkat ${t}</option>`;
+        const filtered = _allData.filter(r => {
+            const matchTingkat  = tingkat === 'ALL' || r.tingkat === tingkat;
+            const matchKelas    = kelas   === 'ALL' || r.kelas   === kelas;
+            const matchTanggal  = !tanggal          || r.tanggal === tanggal;
+            return matchTingkat && matchKelas && matchTanggal;
         });
 
-        // Function untuk mengupdate dropdown Kelas berdasarkan Tingkat yang dipilih
-        const updateKelasDropdown = () => {
-            const selectedTingkat = tingkatSelect.value;
-            kelasSelect.innerHTML = '<option value="ALL">Semua Kelas</option>';
-
-            // Filter data kelas berdasarkan tingkat yang dipilih
-            let filteredKelas = data;
-            if (selectedTingkat !== 'ALL') {
-                filteredKelas = data.filter(d => d.tingkat === selectedTingkat);
-            }
-
-            // Dapatkan daftar kelas unik yang tersisa
-            const kelasList = [...new Set(filteredKelas.map(d => d.kelas).filter(Boolean))].sort();
-
-            kelasList.forEach(k => {
-                kelasSelect.innerHTML += `<option value="${k}">${k}</option>`;
-            });
-        };
-
-        // Inisialisasi dropdown kelas pertama kali
-        updateKelasDropdown();
-
-        // Set Bind Event Listeners
-        const triggerUpdate = () => {
-            const filtered = data.filter(d => {
-                const matchTingkat = (tingkatSelect.value === 'ALL' || d.tingkat === tingkatSelect.value);
-                const matchKelas = (kelasSelect.value === 'ALL' || d.kelas === kelasSelect.value);
-                const matchTanggal = (!tanggalInput.value || d.tanggal === tanggalInput.value);
-                return matchTingkat && matchKelas && matchTanggal;
-            });
-            onFilterChangeCallback(filtered);
-        };
-
-        // Jika tingkat diubah: 
-        // 1. Update dropdown kelas
-        // 2. Trigger update data chart/table
-        tingkatSelect.addEventListener('change', () => {
-            updateKelasDropdown();
-            triggerUpdate();
-        });
-
-        kelasSelect.addEventListener('change', triggerUpdate);
-        tanggalInput.addEventListener('change', triggerUpdate);
+        if (_onFilter) _onFilter(filtered);
     }
-};
+
+    function _populateTingkat() {
+        const sel = document.getElementById('filter-tingkat');
+        if (!sel) return;
+        const tingkatSet = [...new Set(_allData.map(r => r.tingkat))].filter(Boolean).sort();
+        sel.innerHTML = '<option value="ALL">Semua Tingkat</option>';
+        tingkatSet.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t; opt.textContent = 'Tingkat ' + t;
+            sel.appendChild(opt);
+        });
+    }
+
+    function _populateKelas(filterTingkat = 'ALL') {
+        const sel = document.getElementById('filter-kelas');
+        if (!sel) return;
+        const kelasSet = [...new Set(
+            _allData
+                .filter(r => filterTingkat === 'ALL' || r.tingkat === filterTingkat)
+                .map(r => r.kelas)
+        )].filter(Boolean).sort();
+        sel.innerHTML = '<option value="ALL">Semua Kelas</option>';
+        kelasSet.forEach(k => {
+            const opt = document.createElement('option');
+            opt.value = k; opt.textContent = k;
+            sel.appendChild(opt);
+        });
+    }
+
+    return {
+        Initialize(allData, onFilter) {
+            _allData  = allData;
+            _onFilter = onFilter;
+
+            _populateTingkat();
+            _populateKelas();
+
+            const selTingkat = document.getElementById('filter-tingkat');
+            const selKelas   = document.getElementById('filter-kelas');
+            const inpTanggal = document.getElementById('filter-tanggal');
+
+            if (selTingkat) selTingkat.addEventListener('change', () => {
+                _populateKelas(selTingkat.value);
+                _applyFilters();
+            });
+            if (selKelas)   selKelas.addEventListener('change',   _applyFilters);
+            if (inpTanggal) inpTanggal.addEventListener('change', _applyFilters);
+        }
+    };
+})();
